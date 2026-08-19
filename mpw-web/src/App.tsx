@@ -187,7 +187,7 @@ function App() {
   const [template, setTemplate] = useState<TemplateName>('long')
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [result, setResult] = useState('')
-  const [showResult, setShowResult] = useState(true)
+  const [showResult, setShowResult] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
@@ -255,7 +255,7 @@ function App() {
     try {
       const generated = await mpwRef.current.generateAuthentication(target, { counter, template })
       setResult(generated)
-      setShowResult(true)
+      setShowResult(false)
       storeHistory(upsertHistory(history, { site: target, counter, template }))
     } catch (cause) {
       setError(cause instanceof Error ? `生成失败：${cause.message}` : '生成失败。')
@@ -321,7 +321,7 @@ function App() {
             {error && <div className="error" role="alert">{error}</div>}
             <div className="generate-row"><button className="primary-button" type="submit" disabled={isGenerating}>{isGenerating ? <LoaderCircle className="spin" size={19} /> : <KeyRound size={19} />}{isGenerating ? '正在生成…' : '生成密码'}</button><span>首次解锁后，生成只需瞬间</span></div>
             </form>
-            <div className={`result ${result ? 'ready' : ''}`} aria-live="polite"><div><span>生成结果</span><strong className={showResult ? '' : 'masked'}>{result || '等待生成'}</strong></div><div className="result-actions"><button className="icon-button" type="button" disabled={!result} onClick={() => setShowResult((value) => !value)} aria-label="显示或隐藏结果">{showResult ? <EyeOff size={18} /> : <Eye size={18} />}</button><button className="copy-button" type="button" disabled={!result} onClick={copyResult}>{copied ? <Check size={18} /> : <Clipboard size={18} />}{copied ? '已复制' : '复制'}</button></div></div>
+            <div className={`result ${result ? 'ready' : ''}`} aria-live="polite"><div><span>生成结果</span><strong className={result && !showResult ? 'masked' : ''}>{result || '等待生成'}</strong></div><div className="result-actions"><button className="icon-button" type="button" disabled={!result} onClick={() => setShowResult((value) => !value)} aria-label="显示或隐藏结果">{showResult ? <EyeOff size={18} /> : <Eye size={18} />}</button><button className="copy-button" type="button" disabled={!result} onClick={copyResult}>{copied ? <Check size={18} /> : <Clipboard size={18} />}{copied ? '已复制' : '复制'}</button></div></div>
           </div>
         </section>
         <DesktopHistory {...historyProps} />
