@@ -43,6 +43,8 @@ describe('App session workflow', () => {
 
     expect(await screen.findByText('ZedaFaxcZaso9*')).toBeInTheDocument()
     expect(generateAuthentication).toHaveBeenCalledWith('example.com', { counter: 1, template: 'long' })
+    fireEvent.click(screen.getByRole('button', { name: '显示或隐藏结果' }))
+    expect(screen.getByText('ZedaFaxcZaso9*')).not.toHaveClass('masked')
     await waitFor(() => expect(localStorage.getItem(STORAGE_KEY)).toContain('example.com'))
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('user')
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('password')
