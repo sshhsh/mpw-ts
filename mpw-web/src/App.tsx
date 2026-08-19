@@ -344,7 +344,7 @@ function HistoryTransfer({ entries, mpw, onClose, onImport }: HistoryTransferPro
   }
 
   return (
-    <div className="transfer-backdrop" role="presentation">
+    <div className={`transfer-backdrop ${mode === 'import' ? 'scanning' : ''}`} role="presentation">
       <section className={`transfer-dialog ${mode === 'export' ? 'exporting-qr' : ''}`} role="dialog" aria-modal="true" aria-labelledby="transfer-title">
         <div className="transfer-heading"><div><QrCode size={18} /><h2 id="transfer-title">迁移网站历史</h2></div><button className="icon-button quiet" type="button" onClick={closeTransfer} aria-label="关闭历史迁移"><X size={18} /></button></div>
         {mode === 'menu' && <div className="transfer-menu"><p>二维码使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。</p><button className="transfer-option" type="button" onClick={() => void exportHistory()} disabled={entries.length === 0 || exporting}>{exporting ? <LoaderCircle className="spin" size={22} /> : <QrCode size={22} />}<span><strong>{exporting ? '正在加密历史…' : '显示迁移二维码'}</strong><small>导出全部 {entries.length} 条历史</small></span></button><button className="transfer-option" type="button" onClick={() => void startCamera()}><ScanLine size={22} /><span><strong>使用摄像头扫描</strong><small>手机建议使用后置摄像头</small></span></button><label className="transfer-option"><Upload size={22} /><span><strong>选择二维码图片</strong><small>电脑可一次选择多张截图</small></span><input type="file" accept="image/*" multiple onChange={(event) => void importImages(event)} /></label></div>}

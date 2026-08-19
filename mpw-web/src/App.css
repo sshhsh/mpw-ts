@@ -100,8 +100,9 @@ footer { max-width: 1440px; height: 50px; box-sizing: border-box; margin: 0 auto
 .footer-meta { min-width: 0; justify-content: flex-end; gap: 18px; }
 .build-info a { color: inherit; text-decoration: none; white-space: nowrap; }
 .build-info a:hover { color: var(--green); }
-.transfer-backdrop { position: fixed; inset: 0; z-index: 40; padding: 20px; display: grid; place-items: center; background: rgba(21,53,45,.32); backdrop-filter: blur(5px); }
+.transfer-backdrop { position: fixed; inset: 0; z-index: 40; padding: 20px; display: grid; place-items: center; background: rgba(21,53,45,.46); }
 .transfer-dialog { width: min(100%, 420px); max-height: min(720px, calc(100svh - 40px)); box-sizing: border-box; overflow: auto; padding: 24px; border: 1px solid var(--line-strong); background: var(--paper); box-shadow: 0 22px 70px rgba(21,53,45,.22); animation: rise .25s ease-out both; }
+.transfer-backdrop.scanning .transfer-dialog { animation: none; transform: none; box-shadow: 0 10px 32px rgba(21,53,45,.18); }
 .transfer-dialog.exporting-qr { width: min(100%, 500px); padding: 20px; }
 .transfer-heading,.transfer-heading>div,.transfer-controls { display: flex; align-items: center; }
 .transfer-heading { justify-content: space-between; margin-bottom: 20px; }
@@ -121,7 +122,7 @@ footer { max-width: 1440px; height: 50px; box-sizing: border-box; margin: 0 auto
 .transfer-counter,.transfer-progress { color: var(--muted); font: 11px var(--mono); }
 .transfer-controls { gap: 10px; }
 .transfer-import { gap: 14px; }
-.transfer-import video { width: 100%; max-height: 360px; object-fit: cover; background: #102a24; }
+.transfer-import video { width: 100%; max-height: 360px; object-fit: cover; background: #102a24; transform: translateZ(0); contain: paint; }
 .transfer-import .primary-button { min-width: 0; }
 .transfer-error { width: 100%; box-sizing: border-box; margin: 16px 0 0; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
