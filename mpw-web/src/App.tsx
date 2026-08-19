@@ -303,7 +303,8 @@ function App() {
         <section className="generator" aria-labelledby="generator-title">
           <div className="intro"><div><span className="eyebrow">密码生成器</span><h1 id="generator-title">选择网站，立即生成</h1></div><p><ShieldCheck size={18} /> 所有计算仅在此设备完成</p></div>
           <MobileHistory {...historyProps} />
-          <form onSubmit={generate}>
+          <div className="generator-controls">
+            <form onSubmit={generate}>
             <fieldset className="target-fields">
               <legend><span>01</span> 网站</legend>
               <label className="field site-field"><span>网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" autoFocus /></label>
@@ -317,8 +318,9 @@ function App() {
             </fieldset>
             {error && <div className="error" role="alert">{error}</div>}
             <div className="generate-row"><button className="primary-button" type="submit" disabled={isGenerating}>{isGenerating ? <LoaderCircle className="spin" size={19} /> : <KeyRound size={19} />}{isGenerating ? '正在生成…' : '生成密码'}</button><span>首次解锁后，生成只需瞬间</span></div>
-          </form>
-          <div className={`result ${result ? 'ready' : ''}`} aria-live="polite"><div><span>生成结果</span><strong className={showResult ? '' : 'masked'}>{result || '等待生成'}</strong></div><div className="result-actions"><button className="icon-button" type="button" disabled={!result} onClick={() => setShowResult((value) => !value)} aria-label="显示或隐藏结果">{showResult ? <EyeOff size={18} /> : <Eye size={18} />}</button><button className="copy-button" type="button" disabled={!result} onClick={copyResult}>{copied ? <Check size={18} /> : <Clipboard size={18} />}{copied ? '已复制' : '复制'}</button></div></div>
+            </form>
+            <div className={`result ${result ? 'ready' : ''}`} aria-live="polite"><div><span>生成结果</span><strong className={showResult ? '' : 'masked'}>{result || '等待生成'}</strong></div><div className="result-actions"><button className="icon-button" type="button" disabled={!result} onClick={() => setShowResult((value) => !value)} aria-label="显示或隐藏结果">{showResult ? <EyeOff size={18} /> : <Eye size={18} />}</button><button className="copy-button" type="button" disabled={!result} onClick={copyResult}>{copied ? <Check size={18} /> : <Clipboard size={18} />}{copied ? '已复制' : '复制'}</button></div></div>
+          </div>
         </section>
         <DesktopHistory {...historyProps} />
       </main>
