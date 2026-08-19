@@ -30,7 +30,7 @@ describe('App session workflow', () => {
     fireEvent.change(screen.getByRole('textbox', { name: '完整姓名' }), { target: { value: 'user' } })
     fireEvent.change(screen.getByPlaceholderText('不会被保存'), { target: { value: 'password' } })
     fireEvent.click(screen.getByRole('button', { name: '解锁' }))
-    await screen.findByRole('heading', { name: '选择网站，立即生成' })
+    await screen.findByRole('heading', { name: '生成密码' })
   }
 
   it('unlocks locally and generates authentication passwords', async () => {

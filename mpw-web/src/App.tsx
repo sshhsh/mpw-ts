@@ -69,7 +69,6 @@ function UnlockView(props: UnlockViewProps) {
     <main className="unlock-page">
       <section className="unlock-panel" aria-labelledby="unlock-title">
         <span className="unlock-mark"><KeyRound size={29} /></span>
-        <span className="eyebrow">本地密钥派生</span>
         <h1 id="unlock-title">解锁离线密钥</h1>
         <p className="unlock-copy">身份信息只在当前页面内存中使用，锁定或刷新后立即清除。</p>
         <form className="unlock-form" onSubmit={props.onSubmit}>
@@ -139,7 +138,7 @@ function DesktopHistory(props: HistoryProps) {
   return (
     <aside className="history desktop-history" aria-labelledby="history-title">
       <div className="history-heading">
-        <div><span className="eyebrow">仅保存在本机</span><h2 id="history-title">最近网站</h2></div>
+        <h2 id="history-title">最近使用</h2>
         {props.entries.length > 0 && <button className="icon-button quiet" type="button" onClick={props.onClear} aria-label="清除全部历史"><Trash2 size={17} /></button>}
       </div>
       <label className="search-box"><Search size={17} /><input value={props.search} onChange={(event) => props.onSearchChange(event.target.value)} placeholder="搜索网站" aria-label="搜索网站历史" /></label>
@@ -154,7 +153,7 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
   return (
     <section className="mobile-history" aria-labelledby="mobile-history-title">
       <div className="mobile-history-heading">
-        <div><span className="eyebrow">快速载入</span><h2 id="mobile-history-title">最近网站</h2></div>
+        <h2 id="mobile-history-title">最近使用</h2>
         {props.entries.length > 0 && <button className="text-button" type="button" onClick={() => setManaging((value) => !value)}>{managing ? '完成' : '管理'}</button>}
       </div>
       {props.entries.length === 0 ? <p className="mobile-history-empty">生成第一个密码后，网站会保存在这里。</p> : (
@@ -304,12 +303,11 @@ function App() {
       </header>
       <main className="workspace">
         <section className="generator" aria-labelledby="generator-title">
-          <div className="intro"><div><span className="eyebrow">密码生成器</span><h1 id="generator-title">选择网站，立即生成</h1></div><p><ShieldCheck size={18} /> 所有计算仅在此设备完成</p></div>
+          <div className="intro"><h1 id="generator-title">生成密码</h1><p><ShieldCheck size={18} /> 所有计算仅在此设备完成</p></div>
           <MobileHistory {...historyProps} />
           <div className="generator-controls">
             <form onSubmit={generate}>
-            <fieldset className="target-fields">
-              <legend><span>01</span> 网站</legend>
+            <fieldset className="target-fields" aria-label="密码生成参数">
               <label className="field site-field"><span>网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" /></label>
               <details className="advanced" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
                 <summary><Settings2 size={16} /><span>高级选项</span><small>{templateLabels[template].split(' · ')[0]} · 计数器 {counter}</small><ChevronDown size={16} /></summary>
