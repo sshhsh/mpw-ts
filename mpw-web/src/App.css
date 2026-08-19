@@ -36,6 +36,9 @@ fieldset { min-width: 0; margin: 0; padding: 24px 0 32px; border: 0; border-top:
 .field>span { color: var(--ink-soft); font-weight: 650; }
 .section-label,.history-heading h2,.mobile-history-heading h2 { display: flex; align-items: center; gap: 8px; }
 .section-label svg,.history-heading h2 svg,.mobile-history-heading h2 svg { flex: 0 0 auto; color: var(--green); }
+.field-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.field-clear { width: 26px; height: 26px; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: 4px; color: var(--muted); background: transparent; }
+.field-clear:hover:not(:disabled) { color: var(--green); background: rgba(35,105,83,.08); }
 .input-shell,.field>input,.field>select,.stepper,.search-box { height: 48px; box-sizing: border-box; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--paper); }
 .input-shell { padding-left: 14px; display: flex; align-items: center; gap: 10px; }
 .input-shell:focus-within,.field>input:focus,.field>select:focus,.stepper:focus-within,.search-box:focus-within { outline: 2px solid rgba(35,105,83,.22); border-color: var(--green); }

@@ -107,4 +107,17 @@ describe('App session workflow', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /载入 example\.com，长密码，计数器 1/ })[0])
     expect(screen.getByRole('spinbutton', { name: '计数器' })).toHaveValue(1)
   })
+
+  it('clears the site and resets all generation options together', async () => {
+    await unlock()
+    const siteInput = screen.getByRole('textbox', { name: '网站或服务' })
+    fireEvent.change(siteInput, { target: { value: 'example.com' } })
+    fireEvent.click(screen.getByText(/高级选项/))
+    fireEvent.click(screen.getByRole('button', { name: '增加计数器' }))
+
+    fireEvent.click(screen.getByRole('button', { name: '清空生成参数' }))
+    expect(siteInput).toHaveValue('')
+    expect(screen.getByRole('spinbutton', { name: '计数器' })).toHaveValue(1)
+    expect(screen.getByRole('combobox', { name: '密码模板' })).toHaveValue('long')
+  })
 })
