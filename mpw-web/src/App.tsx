@@ -159,7 +159,7 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
       </div>
       {props.entries.length === 0 ? <p className="mobile-history-empty">生成第一个密码后，网站会保存在这里。</p> : (
         <div className="history-shortcuts">
-          {props.entries.slice(0, 12).map((entry) => (
+          {props.entries.map((entry) => (
             <div className={`shortcut-wrap ${props.selectedId === entry.id ? 'selected' : ''}`} key={entry.id}>
               <button className="history-shortcut" type="button" onClick={() => props.onLoad(entry)} aria-label={`载入 ${entry.site}，${templateLabels[entry.template].split(' · ')[0]}，计数器 ${entry.counter}`}>
                 <span className="monogram">{entry.site.charAt(0).toUpperCase()}</span>
