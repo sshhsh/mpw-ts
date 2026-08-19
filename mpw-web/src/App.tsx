@@ -4,6 +4,8 @@ import {
   Clipboard,
   Eye,
   EyeOff,
+  Globe2,
+  History,
   KeyRound,
   LoaderCircle,
   LockKeyhole,
@@ -138,7 +140,7 @@ function DesktopHistory(props: HistoryProps) {
   return (
     <aside className="history desktop-history" aria-labelledby="history-title">
       <div className="history-heading">
-        <h2 id="history-title">最近使用</h2>
+        <h2 id="history-title"><History size={16} /> 最近使用</h2>
         {props.entries.length > 0 && <button className="icon-button quiet" type="button" onClick={props.onClear} aria-label="清除全部历史"><Trash2 size={17} /></button>}
       </div>
       <label className="search-box"><Search size={17} /><input value={props.search} onChange={(event) => props.onSearchChange(event.target.value)} placeholder="搜索网站" aria-label="搜索网站历史" /></label>
@@ -153,7 +155,7 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
   return (
     <section className="mobile-history" aria-labelledby="mobile-history-title">
       <div className="mobile-history-heading">
-        <h2 id="mobile-history-title">最近使用</h2>
+        <h2 id="mobile-history-title"><History size={16} /> 最近使用</h2>
         {props.entries.length > 0 && <button className="text-button" type="button" onClick={() => setManaging((value) => !value)}>{managing ? '完成' : '管理'}</button>}
       </div>
       {props.entries.length === 0 ? <p className="mobile-history-empty">生成第一个密码后，网站会保存在这里。</p> : (
@@ -303,12 +305,11 @@ function App() {
       </header>
       <main className="workspace">
         <section className="generator" aria-labelledby="generator-title">
-          <div className="intro"><h1 id="generator-title">生成密码</h1><p><ShieldCheck size={18} /> 所有计算仅在此设备完成</p></div>
           <MobileHistory {...historyProps} />
           <div className="generator-controls">
             <form onSubmit={generate}>
             <fieldset className="target-fields" aria-label="密码生成参数">
-              <label className="field site-field"><span>网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" /></label>
+              <label className="field site-field"><span className="section-label"><Globe2 size={16} /> 网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" /></label>
               <details className="advanced" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
                 <summary><Settings2 size={16} /><span>高级选项</span><small>{templateLabels[template].split(' · ')[0]} · 计数器 {counter}</small><ChevronDown size={16} /></summary>
                 <div className="advanced-fields">

@@ -33,6 +33,8 @@ form { animation: rise .4s .08s ease-out both; }
 fieldset { min-width: 0; margin: 0; padding: 24px 0 32px; border: 0; border-top: 1px solid var(--line-strong); }
 .field { min-width: 0; display: grid; gap: 8px; color: var(--muted); font-size: 12px; }
 .field>span { color: var(--ink-soft); font-weight: 650; }
+.section-label,.history-heading h2,.mobile-history-heading h2 { display: flex; align-items: center; gap: 8px; }
+.section-label svg,.history-heading h2 svg,.mobile-history-heading h2 svg { flex: 0 0 auto; color: var(--green); }
 .input-shell,.field>input,.field>select,.stepper,.search-box { height: 48px; box-sizing: border-box; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--paper); }
 .input-shell { padding-left: 14px; display: flex; align-items: center; gap: 10px; }
 .input-shell:focus-within,.field>input:focus,.field>select:focus,.stepper:focus-within,.search-box:focus-within { outline: 2px solid rgba(35,105,83,.22); border-color: var(--green); }
@@ -67,7 +69,7 @@ fieldset { min-width: 0; margin: 0; padding: 24px 0 32px; border: 0; border-top:
 .result-actions { flex: 0 0 auto; gap: 8px; }
 .copy-button { min-width: 94px; height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 5px; color: white; background: var(--green); font-weight: 650; }
 .history-heading,.mobile-history-heading { align-items: flex-start; justify-content: space-between; margin-bottom: 19px; }
-.history-heading h2,.mobile-history-heading h2 { margin: 0; color: var(--ink); font-size: 22px; font-weight: 600; }
+.history-heading h2,.mobile-history-heading h2 { margin: 0; color: var(--ink-soft); font-size: 12px; font-weight: 650; }
 .search-box { padding-left: 12px; display: flex; align-items: center; gap: 8px; color: var(--muted); background: rgba(255,255,255,.64); }
 .search-box input { min-width: 0; height: 100%; flex: 1; border: 0; outline: 0; color: var(--ink); background: transparent; }
 .history-list { min-height: 0; margin-top: 16px; display: grid; align-content: start; gap: 7px; overflow-y: auto; scrollbar-width: thin; }
