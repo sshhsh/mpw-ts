@@ -58,7 +58,7 @@ npm run preview --workspace mpw-web
 
 - 姓名、主密码、派生密钥和生成结果只存在于当前内存会话中。
 - 刷新、关闭页面或锁定会话后，需要重新解锁。
-- localStorage 的 `mpw.site-history.v2` 只保存网站、模板、计数器和最近使用时间。
+- localStorage 的 `mpw.site-history` 只保存网站、模板、计数器和最近使用时间。
 - 网站历史不包含姓名、主密码、派生密钥或生成结果。
 - localStorage 是浏览器本地存储，不是加密保险箱；使用共享设备时应清理浏览器数据。
 - `MPW.invalidate()` 会清除实例持有的主密钥，并阻止继续生成。

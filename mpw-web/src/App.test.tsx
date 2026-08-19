@@ -67,7 +67,29 @@ describe('App session workflow', () => {
     await screen.findByText('ZedaFaxcZaso9*')
     siteInput.blur()
 
-    fireEvent.click(screen.getAllByRole('button', { name: '载入 example.com' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /载入 example\.com/ })[0])
     expect(siteInput).not.toHaveFocus()
+  })
+
+  it('keeps and displays multiple configurations for the same site', async () => {
+    await unlock()
+    const siteInput = screen.getByRole('textbox', { name: '网站或服务' })
+    fireEvent.change(siteInput, { target: { value: 'example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: '生成密码' }))
+    await screen.findByText('ZedaFaxcZaso9*')
+
+    fireEvent.click(screen.getByText(/高级选项/))
+    fireEvent.click(screen.getByRole('button', { name: '增加计数器' }))
+    fireEvent.click(screen.getByRole('button', { name: '生成密码' }))
+
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+      expect(stored).toHaveLength(2)
+    })
+    expect(screen.getAllByRole('button', { name: /载入 example\.com，长密码，计数器 1/ })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /载入 example\.com，长密码，计数器 2/ })).toHaveLength(2)
+
+    fireEvent.click(screen.getAllByRole('button', { name: /载入 example\.com，长密码，计数器 1/ })[0])
+    expect(screen.getByRole('spinbutton', { name: '计数器' })).toHaveValue(1)
   })
 })

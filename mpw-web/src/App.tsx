@@ -105,23 +105,23 @@ function UnlockView(props: UnlockViewProps) {
 interface HistoryProps {
   entries: SiteHistoryEntry[]
   search: string
-  selectedSite: string
+  selectedId: string
   onClear: () => void
   onLoad: (entry: SiteHistoryEntry) => void
   onRemove: (id: string) => void
   onSearchChange: (value: string) => void
 }
 
-function HistoryList({ entries, selectedSite, onLoad, onRemove }: Pick<HistoryProps, 'entries' | 'selectedSite' | 'onLoad' | 'onRemove'>) {
+function HistoryList({ entries, selectedId, onLoad, onRemove }: Pick<HistoryProps, 'entries' | 'selectedId' | 'onLoad' | 'onRemove'>) {
   return (
     <div className="history-list">
       {entries.length === 0 ? (
         <div className="empty"><KeyRound size={25} /><strong>尚无网站历史</strong><span>成功生成后会出现在这里</span></div>
       ) : entries.map((entry) => (
-        <article className={`history-item ${selectedSite === entry.site ? 'selected' : ''}`} key={entry.id}>
-          <button className="history-load" type="button" onClick={() => onLoad(entry)} aria-label={`载入 ${entry.site}`}>
+        <article className={`history-item ${selectedId === entry.id ? 'selected' : ''}`} key={entry.id}>
+          <button className="history-load" type="button" onClick={() => onLoad(entry)} aria-label={`载入 ${entry.site}，${templateLabels[entry.template].split(' · ')[0]}，计数器 ${entry.counter}`}>
             <span className="monogram">{entry.site.charAt(0).toUpperCase()}</span>
-            <span><strong>{entry.site}</strong><small>{templateLabels[entry.template].split(' · ')[0]} · {relativeTime(entry.lastUsedAt)}</small></span>
+            <span><strong>{entry.site}</strong><small>{templateLabels[entry.template].split(' · ')[0]} · 计数器 {entry.counter} · {relativeTime(entry.lastUsedAt)}</small></span>
           </button>
           <button className="delete-button" type="button" onClick={() => onRemove(entry.id)} aria-label={`删除 ${entry.site}`}><X size={15} /></button>
         </article>
@@ -143,7 +143,7 @@ function DesktopHistory(props: HistoryProps) {
         {props.entries.length > 0 && <button className="icon-button quiet" type="button" onClick={props.onClear} aria-label="清除全部历史"><Trash2 size={17} /></button>}
       </div>
       <label className="search-box"><Search size={17} /><input value={props.search} onChange={(event) => props.onSearchChange(event.target.value)} placeholder="搜索网站" aria-label="搜索网站历史" /></label>
-      {filtered.length === 0 && props.search ? <div className="empty"><Search size={24} /><strong>没有匹配的网站</strong></div> : <HistoryList entries={filtered} selectedSite={props.selectedSite} onLoad={props.onLoad} onRemove={props.onRemove} />}
+      {filtered.length === 0 && props.search ? <div className="empty"><Search size={24} /><strong>没有匹配的网站</strong></div> : <HistoryList entries={filtered} selectedId={props.selectedId} onLoad={props.onLoad} onRemove={props.onRemove} />}
       <div className="storage-note"><ShieldCheck size={17} /><p><strong>历史中不含敏感信息</strong><span>姓名、主密码和生成结果永不写入浏览器存储。</span></p></div>
     </aside>
   )
@@ -160,10 +160,10 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
       {props.entries.length === 0 ? <p className="mobile-history-empty">生成第一个密码后，网站会保存在这里。</p> : (
         <div className="history-shortcuts">
           {props.entries.slice(0, 12).map((entry) => (
-            <div className={`shortcut-wrap ${props.selectedSite === entry.site ? 'selected' : ''}`} key={entry.id}>
-              <button className="history-shortcut" type="button" onClick={() => props.onLoad(entry)} aria-label={`载入 ${entry.site}`}>
+            <div className={`shortcut-wrap ${props.selectedId === entry.id ? 'selected' : ''}`} key={entry.id}>
+              <button className="history-shortcut" type="button" onClick={() => props.onLoad(entry)} aria-label={`载入 ${entry.site}，${templateLabels[entry.template].split(' · ')[0]}，计数器 ${entry.counter}`}>
                 <span className="monogram">{entry.site.charAt(0).toUpperCase()}</span>
-                <span><strong>{entry.site}</strong><small>{templateLabels[entry.template].split(' · ')[0]}</small></span>
+                <span><strong>{entry.site}</strong><small>{templateLabels[entry.template].split(' · ')[0]} · 计数器 {entry.counter}</small></span>
               </button>
               {managing && <button className="shortcut-delete" type="button" onClick={() => props.onRemove(entry.id)} aria-label={`删除 ${entry.site}`}><X size={14} /></button>}
             </div>
@@ -294,7 +294,8 @@ function App() {
     return <div className="app-shell locked"><UnlockView fullName={fullName} masterPassword={masterPassword} showMaster={showMaster} isUnlocking={isUnlocking} error={error} onFullNameChange={setFullName} onMasterPasswordChange={setMasterPassword} onToggleMaster={() => setShowMaster((value) => !value)} onSubmit={unlock} /></div>
   }
 
-  const historyProps: HistoryProps = { entries: history, search, selectedSite: site, onClear: clearEntries, onLoad: loadEntry, onRemove: removeEntry, onSearchChange: setSearch }
+  const selectedId = history.find((entry) => entry.site === site && entry.counter === counter && entry.template === template)?.id ?? ''
+  const historyProps: HistoryProps = { entries: history, search, selectedId, onClear: clearEntries, onLoad: loadEntry, onRemove: removeEntry, onSearchChange: setSearch }
   return (
     <div className="app-shell">
       <header className="topbar">

@@ -8,11 +8,18 @@ export interface SiteHistoryEntry {
   lastUsedAt: number
 }
 
-const STORAGE_KEY = 'mpw.site-history.v2'
-const LEGACY_STORAGE_KEY = 'mpw.site-history.v1'
+const STORAGE_KEY = 'mpw.site-history'
 const MAX_ENTRIES = 50
 
-function parseEntry(value: unknown, legacy = false): SiteHistoryEntry | null {
+export function historyEntryId(
+  site: string,
+  template: TemplateName,
+  counter: number,
+): string {
+  return `${encodeURIComponent(site.trim().toLocaleLowerCase())}:${template}:${counter}`
+}
+
+function parseEntry(value: unknown): SiteHistoryEntry | null {
   if (typeof value !== 'object' || value === null) return null
   const entry = value as Record<string, unknown>
   if (
@@ -25,40 +32,33 @@ function parseEntry(value: unknown, legacy = false): SiteHistoryEntry | null {
     typeof entry.template !== 'string' ||
     !Object.hasOwn(TEMPLATES, entry.template) ||
     typeof entry.lastUsedAt !== 'number' ||
-    !Number.isFinite(entry.lastUsedAt) ||
-    (legacy && entry.purpose !== 'authentication')
+    !Number.isFinite(entry.lastUsedAt)
   ) {
     return null
   }
 
   const site = entry.site.trim()
+  const template = entry.template as TemplateName
   return {
-    id: site.toLocaleLowerCase(),
+    id: historyEntryId(site, template, entry.counter),
     site,
     counter: entry.counter,
-    template: entry.template as TemplateName,
+    template,
     lastUsedAt: entry.lastUsedAt,
   }
 }
 
 export function loadHistory(storage: Storage = localStorage): SiteHistoryEntry[] {
   try {
-    const current = storage.getItem(STORAGE_KEY)
-    const raw = current ?? storage.getItem(LEGACY_STORAGE_KEY)
+    const raw = storage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
     const entries = parsed
-      .map((entry) => parseEntry(entry, current === null))
+      .map(parseEntry)
       .filter((entry): entry is SiteHistoryEntry => entry !== null)
       .sort((left, right) => right.lastUsedAt - left.lastUsedAt)
       .slice(0, MAX_ENTRIES)
-    if (current === null) {
-      saveHistory(entries, storage)
-      storage.removeItem(LEGACY_STORAGE_KEY)
-    } else if (storage.getItem(LEGACY_STORAGE_KEY) !== null) {
-      storage.removeItem(LEGACY_STORAGE_KEY)
-    }
     return entries
   } catch {
     return []
@@ -78,7 +78,7 @@ export function upsertHistory(
   now = Date.now(),
 ): SiteHistoryEntry[] {
   const normalizedSite = next.site.trim()
-  const id = normalizedSite.toLocaleLowerCase()
+  const id = historyEntryId(normalizedSite, next.template, next.counter)
   return [
     { ...next, id, site: normalizedSite, lastUsedAt: now },
     ...entries.filter((entry) => entry.id !== id),
@@ -94,7 +94,6 @@ export function removeHistory(
 
 export function clearHistory(storage: Storage = localStorage): void {
   storage.removeItem(STORAGE_KEY)
-  storage.removeItem(LEGACY_STORAGE_KEY)
 }
 
-export { LEGACY_STORAGE_KEY, MAX_ENTRIES, STORAGE_KEY }
+export { MAX_ENTRIES, STORAGE_KEY }

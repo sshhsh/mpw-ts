@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  LEGACY_STORAGE_KEY,
   MAX_ENTRIES,
   STORAGE_KEY,
   loadHistory,
@@ -30,20 +29,6 @@ describe('site history storage', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('context')
   })
 
-  it('migrates only authentication entries from v1', () => {
-    localStorage.setItem(
-      LEGACY_STORAGE_KEY,
-      JSON.stringify([
-        { ...base, id: 'authentication:example.com', purpose: 'authentication', context: '', lastUsedAt: 100 },
-        { ...base, site: 'identity.example', id: 'identification:identity.example', purpose: 'identification', context: '', lastUsedAt: 200 },
-      ]),
-    )
-
-    expect(loadHistory()).toEqual([{ ...base, id: 'example.com', lastUsedAt: 100 }])
-    expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull()
-    expect(localStorage.getItem(STORAGE_KEY)).not.toContain('purpose')
-  })
-
   it('ignores malformed JSON and invalid entries', () => {
     localStorage.setItem(STORAGE_KEY, '{bad json')
     expect(loadHistory()).toEqual([])
@@ -52,7 +37,24 @@ describe('site history storage', () => {
     expect(loadHistory()).toEqual([])
   })
 
-  it('updates duplicates, sorts newest first, and caps capacity', () => {
+  it('keeps configurations for the same site and updates exact duplicates', () => {
+    let entries = upsertHistory([], base, 100)
+    entries = upsertHistory(entries, { ...base, counter: 2 }, 200)
+    entries = upsertHistory(entries, { ...base, template: 'maximum' }, 300)
+
+    expect(entries).toHaveLength(3)
+    expect(entries.map(({ template, counter }) => ({ template, counter }))).toEqual([
+      { template: 'maximum', counter: 1 },
+      { template: 'long', counter: 2 },
+      { template: 'long', counter: 1 },
+    ])
+
+    entries = upsertHistory(entries, base, 400)
+    expect(entries).toHaveLength(3)
+    expect(entries[0]).toMatchObject({ id: 'example.com:long:1', lastUsedAt: 400 })
+  })
+
+  it('sorts newest first and caps capacity', () => {
     let entries = Array.from({ length: MAX_ENTRIES + 5 }, (_, index) =>
       upsertHistory(
         [],
@@ -64,13 +66,11 @@ describe('site history storage', () => {
 
     expect(entries).toHaveLength(MAX_ENTRIES)
     expect(entries[0].site).toBe('example.com')
-    expect(upsertHistory(entries, { ...base, counter: 2 }, 1001)[0].counter).toBe(
-      2,
-    )
   })
 
-  it('removes a single entry', () => {
-    const entries = upsertHistory([], base)
-    expect(removeHistory(entries, entries[0].id)).toEqual([])
+  it('removes a single configuration', () => {
+    const first = upsertHistory([], base)
+    const entries = upsertHistory(first, { ...base, counter: 2 })
+    expect(removeHistory(entries, first[0].id)).toEqual([entries[0]])
   })
 })
