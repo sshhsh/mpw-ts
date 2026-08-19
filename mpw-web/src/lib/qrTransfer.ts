@@ -148,12 +148,12 @@ export function createCameraScanner(
   onDecode: (value: string) => void,
   onError: (message: string) => void,
 ): QrScanner {
-  return new QrScanner(
+  const scanner = new QrScanner(
     video,
     (result) => onDecode(result.data),
     {
       preferredCamera: 'environment',
-      maxScansPerSecond: 2,
+      maxScansPerSecond: 1,
       calculateScanRegion: (video) => {
         const size = Math.round(Math.min(video.videoWidth, video.videoHeight) * 0.7)
         return {
@@ -161,8 +161,8 @@ export function createCameraScanner(
           y: Math.round((video.videoHeight - size) / 2),
           width: size,
           height: size,
-          downScaledWidth: 320,
-          downScaledHeight: 320,
+          downScaledWidth: 240,
+          downScaledHeight: 240,
         }
       },
       returnDetailedScanResult: true,
@@ -171,6 +171,8 @@ export function createCameraScanner(
       },
     },
   )
+  scanner.$canvas.getContext('2d', { alpha: false, willReadFrequently: true })
+  return scanner
 }
 
 export { DEFAULT_CHUNK_SIZE, FRAME_VERSION, MAX_FRAMES }
