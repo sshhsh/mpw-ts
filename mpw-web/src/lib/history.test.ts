@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  MAX_ENTRIES,
   STORAGE_KEY,
   loadHistory,
+  mergeHistory,
   removeHistory,
   saveHistory,
   upsertHistory,
@@ -54,8 +54,8 @@ describe('site history storage', () => {
     expect(entries[0]).toMatchObject({ id: 'example.com:long:1', lastUsedAt: 400 })
   })
 
-  it('sorts newest first and caps capacity', () => {
-    let entries = Array.from({ length: MAX_ENTRIES + 5 }, (_, index) =>
+  it('sorts newest first without discarding older entries', () => {
+    let entries = Array.from({ length: 55 }, (_, index) =>
       upsertHistory(
         [],
         { ...base, site: `site-${index}.example` },
@@ -63,14 +63,38 @@ describe('site history storage', () => {
       )[0],
     )
     entries = upsertHistory(entries, base, 1000)
+    saveHistory(entries)
 
-    expect(entries).toHaveLength(MAX_ENTRIES)
-    expect(entries[0].site).toBe('example.com')
+    const loaded = loadHistory()
+    expect(loaded).toHaveLength(56)
+    expect(loaded[0].site).toBe('example.com')
+    expect(loaded.at(-1)?.site).toBe('site-0.example')
   })
 
   it('removes a single configuration', () => {
     const first = upsertHistory([], base)
     const entries = upsertHistory(first, { ...base, counter: 2 })
     expect(removeHistory(entries, first[0].id)).toEqual([entries[0]])
+  })
+
+  it('merges all entries and keeps the newest duplicate', () => {
+    const current = [
+      upsertHistory([], base, 100)[0],
+      upsertHistory([], { ...base, site: 'local.example' }, 300)[0],
+    ]
+    const incoming = [
+      upsertHistory([], base, 200)[0],
+      upsertHistory([], { ...base, site: 'remote.example' }, 400)[0],
+    ]
+
+    const merged = mergeHistory(current, incoming)
+
+    expect(merged).toHaveLength(3)
+    expect(merged.map((entry) => entry.site)).toEqual([
+      'remote.example',
+      'local.example',
+      'example.com',
+    ])
+    expect(merged[2].lastUsedAt).toBe(200)
   })
 })

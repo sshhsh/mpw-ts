@@ -15,11 +15,18 @@ import {
   Search,
   Settings2,
   ShieldCheck,
+  SkipBack,
+  SkipForward,
+  Pause,
+  Play,
+  QrCode,
+  ScanLine,
+  Upload,
   Trash2,
   UserRound,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 
 import { MPW, TEMPLATES, type TemplateName } from '@mpw/core'
 
@@ -27,11 +34,21 @@ import './App.css'
 import {
   clearHistory,
   loadHistory,
+  mergeHistory,
   removeHistory,
   saveHistory,
   upsertHistory,
   type SiteHistoryEntry,
 } from './lib/history'
+import { decryptHistory, encryptHistory } from './lib/historyTransfer'
+import {
+  createCameraScanner,
+  createQrFrames,
+  QrFrameCollector,
+  renderQrFrame,
+  scanQrImage,
+  type QrScanner,
+} from './lib/qrTransfer'
 
 type MpwInstance = Awaited<ReturnType<typeof MPW.create>>
 
@@ -187,6 +204,149 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
   )
 }
 
+interface HistoryTransferProps {
+  entries: SiteHistoryEntry[]
+  mpw: MpwInstance
+  onClose: () => void
+  onImport: (entries: SiteHistoryEntry[]) => void
+}
+
+function HistoryTransfer({ entries, mpw, onClose, onImport }: HistoryTransferProps) {
+  const [mode, setMode] = useState<'menu' | 'export' | 'import'>('menu')
+  const [frames, setFrames] = useState<string[]>([])
+  const [frameIndex, setFrameIndex] = useState(0)
+  const [playing, setPlaying] = useState(true)
+  const [progress, setProgress] = useState('')
+  const [exporting, setExporting] = useState(false)
+  const [transferError, setTransferError] = useState('')
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const scannerRef = useRef<QrScanner | null>(null)
+  const collectorRef = useRef(new QrFrameCollector())
+  const processingRef = useRef(false)
+
+  useEffect(() => {
+    if (!frames.length || !canvasRef.current) return
+    void renderQrFrame(canvasRef.current, frames[frameIndex]).catch(() => {
+      setTransferError('无法生成二维码。')
+    })
+  }, [frameIndex, frames])
+
+  useEffect(() => {
+    if (!playing || frames.length < 2) return
+    const timer = window.setInterval(
+      () => setFrameIndex((value) => (value + 1) % frames.length),
+      1400,
+    )
+    return () => window.clearInterval(timer)
+  }, [frames.length, playing])
+
+  useEffect(() => () => {
+    scannerRef.current?.destroy()
+    collectorRef.current.reset()
+  }, [])
+
+  async function exportHistory() {
+    setTransferError('')
+    setExporting(true)
+    try {
+      const key = await mpw.deriveHistoryTransferKey()
+      try {
+        const encoded = await encryptHistory(entries, key)
+        setFrames(createQrFrames(encoded))
+        setFrameIndex(0)
+        setPlaying(true)
+        setMode('export')
+      } finally {
+        key.fill(0)
+      }
+    } catch (cause) {
+      setTransferError(cause instanceof Error ? cause.message : '无法导出历史。')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function consumeFrame(value: string) {
+    if (processingRef.current) return
+    try {
+      const result = collectorRef.current.add(value)
+      setProgress(`已收集 ${result.received} / ${result.total} 张`)
+      if (!result.complete) return
+      processingRef.current = true
+      const key = await mpw.deriveHistoryTransferKey()
+      try {
+        const imported = await decryptHistory(result.complete, key)
+        onImport(imported)
+        scannerRef.current?.stop()
+        setProgress(`已合并 ${imported.length} 条历史`)
+      } finally {
+        key.fill(0)
+      }
+    } catch (cause) {
+      setTransferError(cause instanceof Error ? cause.message : '无法读取二维码。')
+    } finally {
+      processingRef.current = false
+    }
+  }
+
+  async function startCamera() {
+    setTransferError('')
+    setMode('import')
+    await new Promise((resolve) => window.setTimeout(resolve, 0))
+    if (!videoRef.current) return
+    scannerRef.current?.destroy()
+    const scanner = createCameraScanner(
+      videoRef.current,
+      (value) => void consumeFrame(value),
+      () => undefined,
+    )
+    scannerRef.current = scanner
+    try {
+      await scanner.start()
+    } catch {
+      setTransferError('无法打开摄像头，请允许权限或选择二维码图片。')
+    }
+  }
+
+  async function importImages(event: ChangeEvent<HTMLInputElement>) {
+    const files = [...(event.target.files ?? [])]
+    if (!files.length) return
+    setMode('import')
+    setTransferError('')
+    for (const file of files) {
+      try {
+        await consumeFrame(await scanQrImage(file))
+      } catch (cause) {
+        setTransferError(cause instanceof Error ? cause.message : '图片中没有可用二维码。')
+        break
+      }
+    }
+    event.target.value = ''
+  }
+
+  function resetImport() {
+    scannerRef.current?.destroy()
+    scannerRef.current = null
+    collectorRef.current.reset()
+    setProgress('')
+    setTransferError('')
+    setMode('menu')
+  }
+
+  return (
+    <div className="transfer-backdrop" role="presentation">
+      <section className="transfer-dialog" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
+        <div className="transfer-heading"><div><QrCode size={18} /><h2 id="transfer-title">迁移网站历史</h2></div><button className="icon-button quiet" type="button" onClick={onClose} aria-label="关闭历史迁移"><X size={18} /></button></div>
+        {mode === 'menu' && <div className="transfer-menu"><p>二维码使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。</p><button className="transfer-option" type="button" onClick={() => void exportHistory()} disabled={entries.length === 0 || exporting}>{exporting ? <LoaderCircle className="spin" size={22} /> : <QrCode size={22} />}<span><strong>{exporting ? '正在加密历史…' : '显示迁移二维码'}</strong><small>导出全部 {entries.length} 条历史</small></span></button><button className="transfer-option" type="button" onClick={() => void startCamera()}><ScanLine size={22} /><span><strong>使用摄像头扫描</strong><small>手机建议使用后置摄像头</small></span></button><label className="transfer-option"><Upload size={22} /><span><strong>选择二维码图片</strong><small>电脑可一次选择多张截图</small></span><input type="file" accept="image/*" multiple onChange={(event) => void importImages(event)} /></label></div>}
+        {mode === 'export' && <div className="transfer-export"><canvas ref={canvasRef} aria-label={`迁移二维码 ${frameIndex + 1}/${frames.length}`} /><div className="transfer-counter">第 {frameIndex + 1} / {frames.length} 张</div><div className="transfer-controls"><button className="icon-button" type="button" onClick={() => setFrameIndex((value) => (value - 1 + frames.length) % frames.length)} aria-label="上一张二维码"><SkipBack size={18} /></button><button className="icon-button" type="button" onClick={() => setPlaying((value) => !value)} aria-label={playing ? '暂停二维码轮播' : '继续二维码轮播'}>{playing ? <Pause size={18} /> : <Play size={18} />}</button><button className="icon-button" type="button" onClick={() => setFrameIndex((value) => (value + 1) % frames.length)} aria-label="下一张二维码"><SkipForward size={18} /></button></div><button className="text-button" type="button" onClick={() => { setFrames([]); setMode('menu') }}>返回</button></div>}
+        {mode === 'import' && <div className="transfer-import"><video ref={videoRef} muted playsInline /><div className="transfer-progress">{progress || '扫描或选择同一批次的全部二维码'}</div><label className="primary-button"><Upload size={18} />选择二维码图片<input type="file" accept="image/*" multiple onChange={(event) => void importImages(event)} /></label><button className="text-button" type="button" onClick={resetImport}>重新开始</button></div>}
+        {transferError && <div className="error transfer-error" role="alert">{transferError}</div>}
+      </section>
+    </div>
+  )
+}
+
 function App() {
   const [fullName, setFullName] = useState('')
   const [masterPassword, setMasterPassword] = useState('')
@@ -204,6 +364,8 @@ function App() {
   const [error, setError] = useState('')
   const [history, setHistory] = useState<SiteHistoryEntry[]>(loadHistory)
   const [search, setSearch] = useState('')
+  const [transferOpen, setTransferOpen] = useState(false)
+  const [mpw, setMpw] = useState<MpwInstance | null>(null)
   const mpwRef = useRef<MpwInstance | null>(null)
 
   useEffect(() => {
@@ -231,7 +393,9 @@ function App() {
     setError('')
     try {
       mpwRef.current?.invalidate()
-      mpwRef.current = await MPW.create(name, masterPassword)
+      const instance = await MPW.create(name, masterPassword)
+      mpwRef.current = instance
+      setMpw(instance)
       setFullName(name)
       setMasterPassword('')
       setShowMaster(false)
@@ -246,6 +410,7 @@ function App() {
   function lockSession() {
     mpwRef.current?.invalidate()
     mpwRef.current = null
+    setMpw(null)
     setIsUnlocked(false)
     setFullName('')
     setMasterPassword('')
@@ -253,6 +418,7 @@ function App() {
     setResult('')
     setCopied(false)
     setError('')
+    setTransferOpen(false)
   }
 
   async function generate(event: FormEvent) {
@@ -302,6 +468,10 @@ function App() {
     setHistory([])
   }
 
+  function importEntries(entries: SiteHistoryEntry[]) {
+    storeHistory(mergeHistory(history, entries))
+  }
+
   if (!isUnlocked) {
     return <div className="app-shell locked"><UnlockView fullName={fullName} masterPassword={masterPassword} showMaster={showMaster} isUnlocking={isUnlocking} error={error} onFullNameChange={setFullName} onMasterPasswordChange={setMasterPassword} onToggleMaster={() => setShowMaster((value) => !value)} onSubmit={unlock} /></div>
   }
@@ -312,7 +482,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><KeyRound size={21} /></span><strong>离线密钥</strong><small>MPW v3</small></div>
-        <div className="session-info"><span>{fullName}</span><button className="icon-button" type="button" onClick={lockSession} title="锁定会话" aria-label="锁定会话"><LockKeyhole size={19} /></button></div>
+        <div className="session-info"><span>{fullName}</span><button className="icon-button" type="button" onClick={() => setTransferOpen(true)} title="迁移网站历史" aria-label="迁移网站历史"><QrCode size={19} /></button><button className="icon-button" type="button" onClick={lockSession} title="锁定会话" aria-label="锁定会话"><LockKeyhole size={19} /></button></div>
       </header>
       <main className="workspace">
         <section className="generator" aria-labelledby="generator-title">
@@ -347,6 +517,7 @@ function App() {
           <BuildInfo />
         </div>
       </footer>
+      {transferOpen && mpw && <HistoryTransfer entries={history} mpw={mpw} onImport={importEntries} onClose={() => setTransferOpen(false)} />}
     </div>
   )
 }

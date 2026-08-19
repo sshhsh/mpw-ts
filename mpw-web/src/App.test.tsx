@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { create, generateAuthentication, invalidate } = vi.hoisted(() => ({
+const { create, deriveHistoryTransferKey, generateAuthentication, invalidate } = vi.hoisted(() => ({
   create: vi.fn(),
+  deriveHistoryTransferKey: vi.fn(),
   generateAuthentication: vi.fn(),
   invalidate: vi.fn(),
 }))
@@ -21,7 +22,8 @@ describe('App session workflow', () => {
     localStorage.clear()
     vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
     render(<App />)
-    create.mockReset().mockResolvedValue({ generateAuthentication, invalidate })
+    create.mockReset().mockResolvedValue({ deriveHistoryTransferKey, generateAuthentication, invalidate })
+    deriveHistoryTransferKey.mockReset().mockResolvedValue(new Uint8Array(32))
     generateAuthentication.mockReset().mockResolvedValue('ZedaFaxcZaso9*')
     invalidate.mockReset()
   })
@@ -50,6 +52,7 @@ describe('App session workflow', () => {
       'href',
       'https://github.com/sshhsh/mpw-ts',
     )
+    expect(screen.getByRole('button', { name: '迁移网站历史' })).toBeInTheDocument()
 
     fireEvent.change(screen.getByRole('textbox', { name: '网站或服务' }), { target: { value: 'example.com' } })
     fireEvent.click(screen.getByRole('button', { name: '生成密码' }))
@@ -62,6 +65,16 @@ describe('App session workflow', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('user')
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('password')
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('ZedaFaxcZaso9*')
+  })
+
+  it('opens the encrypted QR history migration dialog', async () => {
+    await unlock()
+    fireEvent.click(screen.getByRole('button', { name: '迁移网站历史' }))
+
+    expect(screen.getByRole('dialog', { name: '迁移网站历史' })).toBeInTheDocument()
+    expect(screen.getByText(/只能由相同姓名和主密码/)).toBeInTheDocument()
+    expect(screen.getByText('使用摄像头扫描')).toBeInTheDocument()
+    expect(screen.getByText('选择二维码图片')).toBeInTheDocument()
   })
 
   it('invalidates the key and returns to unlock when locked', async () => {

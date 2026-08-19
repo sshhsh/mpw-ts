@@ -9,7 +9,6 @@ export interface SiteHistoryEntry {
 }
 
 const STORAGE_KEY = 'mpw.site-history'
-const MAX_ENTRIES = 50
 
 export function historyEntryId(
   site: string,
@@ -19,7 +18,7 @@ export function historyEntryId(
   return `${encodeURIComponent(site.trim().toLocaleLowerCase())}:${template}:${counter}`
 }
 
-function parseEntry(value: unknown): SiteHistoryEntry | null {
+export function parseHistoryEntry(value: unknown): SiteHistoryEntry | null {
   if (typeof value !== 'object' || value === null) return null
   const entry = value as Record<string, unknown>
   if (
@@ -55,10 +54,9 @@ export function loadHistory(storage: Storage = localStorage): SiteHistoryEntry[]
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
     const entries = parsed
-      .map(parseEntry)
+      .map(parseHistoryEntry)
       .filter((entry): entry is SiteHistoryEntry => entry !== null)
       .sort((left, right) => right.lastUsedAt - left.lastUsedAt)
-      .slice(0, MAX_ENTRIES)
     return entries
   } catch {
     return []
@@ -69,7 +67,7 @@ export function saveHistory(
   entries: SiteHistoryEntry[],
   storage: Storage = localStorage,
 ): void {
-  storage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_ENTRIES)))
+  storage.setItem(STORAGE_KEY, JSON.stringify(entries))
 }
 
 export function upsertHistory(
@@ -82,7 +80,7 @@ export function upsertHistory(
   return [
     { ...next, id, site: normalizedSite, lastUsedAt: now },
     ...entries.filter((entry) => entry.id !== id),
-  ].slice(0, MAX_ENTRIES)
+  ]
 }
 
 export function removeHistory(
@@ -92,8 +90,26 @@ export function removeHistory(
   return entries.filter((entry) => entry.id !== id)
 }
 
+export function mergeHistory(
+  current: SiteHistoryEntry[],
+  incoming: SiteHistoryEntry[],
+): SiteHistoryEntry[] {
+  const merged = new Map<string, SiteHistoryEntry>()
+  for (const value of [...current, ...incoming]) {
+    const entry = parseHistoryEntry(value)
+    if (!entry) continue
+    const existing = merged.get(entry.id)
+    if (!existing || entry.lastUsedAt > existing.lastUsedAt) {
+      merged.set(entry.id, entry)
+    }
+  }
+  return [...merged.values()].sort(
+    (left, right) => right.lastUsedAt - left.lastUsedAt,
+  )
+}
+
 export function clearHistory(storage: Storage = localStorage): void {
   storage.removeItem(STORAGE_KEY)
 }
 
-export { MAX_ENTRIES, STORAGE_KEY }
+export { STORAGE_KEY }

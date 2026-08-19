@@ -59,6 +59,21 @@ describe('MPW v3 compatibility', () => {
     ).rejects.toThrow('Unknown template');
   });
 
+  it('derives an identity-bound history transfer key', async () => {
+    const sameIdentity = await MPW.create('user', 'password');
+    const otherIdentity = await MPW.create('other user', 'password');
+
+    const [first, same, other] = await Promise.all([
+      mpw.deriveHistoryTransferKey(),
+      sameIdentity.deriveHistoryTransferKey(),
+      otherIdentity.deriveHistoryTransferKey(),
+    ]);
+
+    expect(first).toHaveLength(32);
+    expect(same).toEqual(first);
+    expect(other).not.toEqual(first);
+  });
+
   it('zeroizes and invalidates its key', async () => {
     const disposable = await MPW.create('disposable', 'password');
     disposable.invalidate();
@@ -66,6 +81,7 @@ describe('MPW v3 compatibility', () => {
     await expect(disposable.generate('example.com')).rejects.toThrow(
       'invalidated',
     );
+    expect(() => disposable.deriveHistoryTransferKey()).toThrow('invalidated');
   });
 });
 

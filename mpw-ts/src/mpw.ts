@@ -12,6 +12,9 @@ import {
 import type { CryptoProvider } from './crypto/types.js';
 import { concatenate, encodeUtf8, uint32BigEndian } from './utils.js';
 
+const HISTORY_TRANSFER_KEY_CONTEXT =
+  'com.lyndir.masterpassword.history-transfer.v1';
+
 export interface CreateMpwOptions {
   cryptoProvider: CryptoProvider;
 }
@@ -162,6 +165,14 @@ export class MPW {
       ...options,
       namespace: RECOVERY_NAMESPACE,
     });
+  }
+
+  deriveHistoryTransferKey(): Promise<Uint8Array> {
+    this.assertValid();
+    return this.cryptoProvider.hmacSha256(
+      this.masterKey,
+      encodeUtf8(HISTORY_TRANSFER_KEY_CONTEXT),
+    );
   }
 
   invalidate(): void {
