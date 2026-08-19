@@ -161,8 +161,6 @@ export function createCameraScanner(
           y: Math.round((video.videoHeight - size) / 2),
           width: size,
           height: size,
-          downScaledWidth: 240,
-          downScaledHeight: 240,
         }
       },
       returnDetailedScanResult: true,
