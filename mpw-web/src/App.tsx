@@ -271,14 +271,16 @@ function HistoryTransfer({ entries, mpw, onClose, onImport }: HistoryTransferPro
     if (processingRef.current) return
     try {
       const result = collectorRef.current.add(value)
-      setProgress(`已收集 ${result.received} / ${result.total} 张`)
+      if (result.added) {
+        setProgress(`已收集 ${result.received} / ${result.total} 张`)
+      }
       if (!result.complete) return
       processingRef.current = true
+      scannerRef.current?.stop()
       const key = await mpw.deriveHistoryTransferKey()
       try {
         const imported = await decryptHistory(result.complete, key)
         onImport(imported)
-        scannerRef.current?.stop()
         setProgress(`已合并 ${imported.length} 条历史`)
       } finally {
         key.fill(0)
@@ -334,10 +336,17 @@ function HistoryTransfer({ entries, mpw, onClose, onImport }: HistoryTransferPro
     setMode('menu')
   }
 
+  function closeTransfer() {
+    scannerRef.current?.destroy()
+    scannerRef.current = null
+    collectorRef.current.reset()
+    onClose()
+  }
+
   return (
     <div className="transfer-backdrop" role="presentation">
       <section className="transfer-dialog" role="dialog" aria-modal="true" aria-labelledby="transfer-title">
-        <div className="transfer-heading"><div><QrCode size={18} /><h2 id="transfer-title">迁移网站历史</h2></div><button className="icon-button quiet" type="button" onClick={onClose} aria-label="关闭历史迁移"><X size={18} /></button></div>
+        <div className="transfer-heading"><div><QrCode size={18} /><h2 id="transfer-title">迁移网站历史</h2></div><button className="icon-button quiet" type="button" onClick={closeTransfer} aria-label="关闭历史迁移"><X size={18} /></button></div>
         {mode === 'menu' && <div className="transfer-menu"><p>二维码使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。</p><button className="transfer-option" type="button" onClick={() => void exportHistory()} disabled={entries.length === 0 || exporting}>{exporting ? <LoaderCircle className="spin" size={22} /> : <QrCode size={22} />}<span><strong>{exporting ? '正在加密历史…' : '显示迁移二维码'}</strong><small>导出全部 {entries.length} 条历史</small></span></button><button className="transfer-option" type="button" onClick={() => void startCamera()}><ScanLine size={22} /><span><strong>使用摄像头扫描</strong><small>手机建议使用后置摄像头</small></span></button><label className="transfer-option"><Upload size={22} /><span><strong>选择二维码图片</strong><small>电脑可一次选择多张截图</small></span><input type="file" accept="image/*" multiple onChange={(event) => void importImages(event)} /></label></div>}
         {mode === 'export' && <div className="transfer-export"><canvas ref={canvasRef} aria-label={`迁移二维码 ${frameIndex + 1}/${frames.length}`} /><div className="transfer-counter">第 {frameIndex + 1} / {frames.length} 张</div><div className="transfer-controls"><button className="icon-button" type="button" onClick={() => setFrameIndex((value) => (value - 1 + frames.length) % frames.length)} aria-label="上一张二维码"><SkipBack size={18} /></button><button className="icon-button" type="button" onClick={() => setPlaying((value) => !value)} aria-label={playing ? '暂停二维码轮播' : '继续二维码轮播'}>{playing ? <Pause size={18} /> : <Play size={18} />}</button><button className="icon-button" type="button" onClick={() => setFrameIndex((value) => (value + 1) % frames.length)} aria-label="下一张二维码"><SkipForward size={18} /></button></div><button className="text-button" type="button" onClick={() => { setFrames([]); setMode('menu') }}>返回</button></div>}
         {mode === 'import' && <div className="transfer-import"><video ref={videoRef} muted playsInline /><div className="transfer-progress">{progress || '扫描或选择同一批次的全部二维码'}</div><label className="primary-button"><Upload size={18} />选择二维码图片<input type="file" accept="image/*" multiple onChange={(event) => void importImages(event)} /></label><button className="text-button" type="button" onClick={resetImport}>重新开始</button></div>}

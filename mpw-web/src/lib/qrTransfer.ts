@@ -19,6 +19,7 @@ export interface QrTransferProgress {
   batchId: string
   received: number
   total: number
+  added: boolean
 }
 
 function randomBatchId(): string {
@@ -87,6 +88,7 @@ export class QrFrameCollector {
   private batchId = ''
   private total = 0
   private checksum = ''
+  private complete = false
   private readonly frames = new Map<number, string>()
 
   add(value: string): QrTransferProgress & { complete?: string } {
@@ -103,11 +105,18 @@ export class QrFrameCollector {
     if (frame.b !== this.batchId || frame.t !== this.total || checksum !== this.checksum) {
       throw new Error('二维码不属于当前迁移批次。')
     }
+    const added = !this.frames.has(frame.i)
     this.frames.set(frame.i, payload)
-    const progress = { batchId: this.batchId, received: this.frames.size, total: this.total }
-    if (this.frames.size !== this.total) return progress
+    const progress = {
+      batchId: this.batchId,
+      received: this.frames.size,
+      total: this.total,
+      added,
+    }
+    if (this.complete || this.frames.size !== this.total) return progress
     const encoded = Array.from({ length: this.total }, (_, index) => this.frames.get(index)).join('')
     if (digest(encoded) !== this.checksum) throw new Error('二维码数据校验失败。')
+    this.complete = true
     return { ...progress, complete: encoded }
   }
 
@@ -115,6 +124,7 @@ export class QrFrameCollector {
     this.batchId = ''
     this.total = 0
     this.checksum = ''
+    this.complete = false
     this.frames.clear()
   }
 }
@@ -143,8 +153,18 @@ export function createCameraScanner(
     (result) => onDecode(result.data),
     {
       preferredCamera: 'environment',
-      highlightScanRegion: true,
-      highlightCodeOutline: true,
+      maxScansPerSecond: 2,
+      calculateScanRegion: (video) => {
+        const size = Math.round(Math.min(video.videoWidth, video.videoHeight) * 0.7)
+        return {
+          x: Math.round((video.videoWidth - size) / 2),
+          y: Math.round((video.videoHeight - size) / 2),
+          width: size,
+          height: size,
+          downScaledWidth: 320,
+          downScaledHeight: 320,
+        }
+      },
       returnDetailedScanResult: true,
       onDecodeError: (error) => {
         if (error instanceof Error) onError(error.message)

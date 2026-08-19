@@ -16,6 +16,16 @@ describe('QR transfer framing', () => {
     expect(result).toBe('abcdefghijklmnopqrstuvwxyz')
   })
 
+  it('emits a completed batch only once', () => {
+    const frame = createQrFrames('complete-once', 100)[0]
+    const collector = new QrFrameCollector()
+
+    expect(collector.add(frame).complete).toBe('complete-once')
+    const repeated = collector.add(frame)
+    expect(repeated.added).toBe(false)
+    expect(repeated.complete).toBeUndefined()
+  })
+
   it('rejects frames from a different batch', () => {
     const first = new QrFrameCollector()
     const second = createQrFrames('second', 100)[0]
