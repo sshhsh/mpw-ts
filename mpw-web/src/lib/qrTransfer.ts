@@ -4,7 +4,7 @@ import QrScanner from 'qr-scanner'
 import type { SiteHistoryEntry } from './history'
 
 const FRAME_VERSION = 1
-const DEFAULT_CHUNK_SIZE = 700
+const DEFAULT_CHUNK_SIZE = 320
 const MAX_FRAMES = 10_000
 
 export interface QrTransferFrame {
@@ -132,8 +132,8 @@ export class QrFrameCollector {
 export function renderQrFrame(canvas: HTMLCanvasElement, frame: string): Promise<void> {
   return QRCode.toCanvas(canvas, frame, {
     errorCorrectionLevel: 'M',
-    margin: 2,
-    width: 320,
+    margin: 4,
+    width: 440,
     color: { dark: '#15352d', light: '#ffffff' },
   })
 }

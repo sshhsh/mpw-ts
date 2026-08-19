@@ -115,7 +115,7 @@ footer { max-width: 1440px; height: 50px; box-sizing: border-box; margin: 0 auto
 .transfer-option small { color: var(--muted); font-size: 10px; }
 .transfer-option input,.transfer-import input { display: none; }
 .transfer-export,.transfer-import { display: grid; justify-items: center; gap: 12px; }
-.transfer-export canvas { width: min(100%, 320px); height: auto; aspect-ratio: 1; image-rendering: pixelated; background: white; }
+.transfer-export canvas { width: min(100%, 440px); height: auto; aspect-ratio: 1; image-rendering: pixelated; background: white; }
 .transfer-counter,.transfer-progress { color: var(--muted); font: 11px var(--mono); }
 .transfer-controls { gap: 10px; }
 .transfer-import { gap: 14px; }

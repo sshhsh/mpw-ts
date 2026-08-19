@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { createQrFrames, QrFrameCollector } from './qrTransfer'
+import { DEFAULT_CHUNK_SIZE, createQrFrames, QrFrameCollector } from './qrTransfer'
 
 describe('QR transfer framing', () => {
+  it('uses a smaller default payload for camera readability', () => {
+    expect(DEFAULT_CHUNK_SIZE).toBe(320)
+    expect(createQrFrames('a'.repeat(321))).toHaveLength(2)
+  })
+
   it('reassembles shuffled and duplicated frames', () => {
     const frames = createQrFrames('abcdefghijklmnopqrstuvwxyz', 100)
     const collector = new QrFrameCollector()
