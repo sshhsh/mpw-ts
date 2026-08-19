@@ -278,7 +278,9 @@ function App() {
     setAdvancedOpen(entry.counter !== 1 || entry.template !== 'long')
     setResult('')
     setError('')
-    document.querySelector<HTMLInputElement>('#site-input')?.focus()
+    if (window.matchMedia('(pointer: fine)').matches) {
+      document.querySelector<HTMLInputElement>('#site-input')?.focus()
+    }
   }
 
   function removeEntry(id: string) { storeHistory(removeHistory(history, id)) }
@@ -307,7 +309,7 @@ function App() {
             <form onSubmit={generate}>
             <fieldset className="target-fields">
               <legend><span>01</span> 网站</legend>
-              <label className="field site-field"><span>网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" autoFocus /></label>
+              <label className="field site-field"><span>网站或服务</span><input id="site-input" value={site} onChange={(event) => { setSite(event.target.value); setResult('') }} autoComplete="off" placeholder="例如 example.com" /></label>
               <details className="advanced" open={advancedOpen} onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}>
                 <summary><Settings2 size={16} /><span>高级选项</span><small>{templateLabels[template].split(' · ')[0]} · 计数器 {counter}</small><ChevronDown size={16} /></summary>
                 <div className="advanced-fields">

@@ -18,8 +18,9 @@ import { STORAGE_KEY } from './lib/history'
 describe('App session workflow', () => {
   beforeEach(() => {
     cleanup()
-    render(<App />)
     localStorage.clear()
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
+    render(<App />)
     create.mockReset().mockResolvedValue({ generateAuthentication, invalidate })
     generateAuthentication.mockReset().mockResolvedValue('ZedaFaxcZaso9*')
     invalidate.mockReset()
@@ -54,5 +55,19 @@ describe('App session workflow', () => {
     expect(invalidate).toHaveBeenCalledOnce()
     expect(screen.getByRole('heading', { name: '解锁离线密钥' })).toBeInTheDocument()
     expect(screen.getByRole('textbox', { name: '完整姓名' })).toHaveValue('')
+  })
+
+  it('does not focus the site input after unlocking or loading history on touch devices', async () => {
+    await unlock()
+    const siteInput = screen.getByRole('textbox', { name: '网站或服务' })
+    expect(siteInput).not.toHaveFocus()
+
+    fireEvent.change(siteInput, { target: { value: 'example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: '生成密码' }))
+    await screen.findByText('ZedaFaxcZaso9*')
+    siteInput.blur()
+
+    fireEvent.click(screen.getAllByRole('button', { name: '载入 example.com' })[0])
+    expect(siteInput).not.toHaveFocus()
   })
 })
