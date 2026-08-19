@@ -5,6 +5,7 @@ import {
   Eye,
   EyeOff,
   Globe2,
+  Github,
   History,
   KeyRound,
   LoaderCircle,
@@ -54,6 +55,15 @@ function relativeTime(timestamp: number): string {
   return `${Math.floor(hours / 24)} 天前`
 }
 
+function BuildInfo() {
+  return (
+    <div className="build-info">
+      <span>Commit {__COMMIT_SHA__}</span>
+      <a href="https://github.com/sshhsh/mpw-ts" target="_blank" rel="noreferrer" aria-label="在 GitHub 查看源代码"><Github size={14} /><span>github.com/sshhsh/mpw-ts</span></a>
+    </div>
+  )
+}
+
 interface UnlockViewProps {
   error: string
   fullName: string
@@ -98,6 +108,7 @@ function UnlockView(props: UnlockViewProps) {
           </button>
         </form>
         <div className="unlock-security"><ShieldCheck size={17} /><span>无账户 · 无网络请求 · 不保存身份</span></div>
+        <BuildInfo />
       </section>
     </main>
   )
@@ -326,7 +337,13 @@ function App() {
         </section>
         <DesktopHistory {...historyProps} />
       </main>
-      <footer><span>算法版本 MPW v3</span><span>离线优先 · 无需账户 · 无网络请求</span></footer>
+      <footer>
+        <span>算法版本 MPW v3</span>
+        <div className="footer-meta">
+          <span>离线优先 · 无需账户 · 无网络请求</span>
+          <BuildInfo />
+        </div>
+      </footer>
     </div>
   )
 }

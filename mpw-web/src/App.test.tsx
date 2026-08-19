@@ -33,10 +33,23 @@ describe('App session workflow', () => {
     await screen.findByRole('textbox', { name: '网站或服务' })
   }
 
+  it('shows build and source information before unlocking', () => {
+    expect(screen.getByText(/Commit (?:[0-9a-f]{7}|unknown)/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '在 GitHub 查看源代码' })).toHaveAttribute(
+      'href',
+      'https://github.com/sshhsh/mpw-ts',
+    )
+  })
+
   it('unlocks locally and generates authentication passwords', async () => {
     await unlock()
     expect(create).toHaveBeenCalledWith('user', 'password')
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    expect(screen.getByText(/Commit (?:[0-9a-f]{7}|unknown)/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '在 GitHub 查看源代码' })).toHaveAttribute(
+      'href',
+      'https://github.com/sshhsh/mpw-ts',
+    )
 
     fireEvent.change(screen.getByRole('textbox', { name: '网站或服务' }), { target: { value: 'example.com' } })
     fireEvent.click(screen.getByRole('button', { name: '生成密码' }))
