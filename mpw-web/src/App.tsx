@@ -621,76 +621,85 @@ function HistoryTransfer({
             <p>
               迁移数据使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。
             </p>
-            <button
-              className="transfer-option"
-              type="button"
-              onClick={() => void exportHistory()}
-              disabled={entries.length === 0 || exporting}
+            <div className="transfer-option-group" aria-labelledby="qr-options">
+              <h3 id="qr-options">二维码</h3>
+              <button
+                className="transfer-option"
+                type="button"
+                onClick={() => void exportHistory()}
+                disabled={entries.length === 0 || exporting}
+              >
+                {exporting ? (
+                  <LoaderCircle className="spin" size={22} />
+                ) : (
+                  <QrCode size={22} />
+                )}
+                <span>
+                  <strong>
+                    {exporting ? '正在加密历史…' : '显示迁移二维码'}
+                  </strong>
+                  <small>导出全部 {entries.length} 条历史</small>
+                </span>
+              </button>
+              <button
+                className="transfer-option"
+                type="button"
+                onClick={() => void startCamera()}
+              >
+                <ScanLine size={22} />
+                <span>
+                  <strong>使用摄像头扫描</strong>
+                  <small>手机建议使用后置摄像头</small>
+                </span>
+              </button>
+              <label className="transfer-option">
+                <Upload size={22} />
+                <span>
+                  <strong>选择二维码图片</strong>
+                  <small>电脑可一次选择多张截图</small>
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(event) => void importImages(event)}
+                />
+              </label>
+            </div>
+            <div
+              className="transfer-option-group"
+              aria-labelledby="text-options"
             >
-              {exporting ? (
-                <LoaderCircle className="spin" size={22} />
-              ) : (
-                <QrCode size={22} />
-              )}
-              <span>
-                <strong>
-                  {exporting ? '正在加密历史…' : '显示迁移二维码'}
-                </strong>
-                <small>导出全部 {entries.length} 条历史</small>
-              </span>
-            </button>
-            <button
-              className="transfer-option"
-              type="button"
-              onClick={() => void exportText()}
-              disabled={entries.length === 0 || exporting}
-            >
-              <FileText size={22} />
-              <span>
-                <strong>导出迁移文本</strong>
-                <small>复制全部 {entries.length} 条加密历史</small>
-              </span>
-            </button>
-            <button
-              className="transfer-option"
-              type="button"
-              onClick={() => {
-                setTransferText('');
-                setProgress('');
-                setTransferError('');
-                setMode('text-import');
-              }}
-            >
-              <Clipboard size={22} />
-              <span>
-                <strong>导入迁移文本</strong>
-                <small>粘贴另一台设备导出的加密文本</small>
-              </span>
-            </button>
-            <button
-              className="transfer-option"
-              type="button"
-              onClick={() => void startCamera()}
-            >
-              <ScanLine size={22} />
-              <span>
-                <strong>使用摄像头扫描</strong>
-                <small>手机建议使用后置摄像头</small>
-              </span>
-            </button>
-            <label className="transfer-option">
-              <Upload size={22} />
-              <span>
-                <strong>选择二维码图片</strong>
-                <small>电脑可一次选择多张截图</small>
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(event) => void importImages(event)}
-              />
-            </label>
+              <h3 id="text-options">文本</h3>
+              <button
+                className="transfer-option"
+                type="button"
+                onClick={() => void exportText()}
+                disabled={entries.length === 0 || exporting}
+              >
+                <FileText size={22} />
+                <span>
+                  <strong>导出迁移文本</strong>
+                  <small>复制全部 {entries.length} 条加密历史</small>
+                </span>
+              </button>
+              <button
+                className="transfer-option"
+                type="button"
+                onClick={() => {
+                  setTransferText('');
+                  setProgress('');
+                  setTransferError('');
+                  setMode('text-import');
+                }}
+              >
+                <Clipboard size={22} />
+                <span>
+                  <strong>导入迁移文本</strong>
+                  <small>粘贴另一台设备导出的加密文本</small>
+                </span>
+              </button>
+            </div>
           </div>
         )}
         {mode === 'export' && (
