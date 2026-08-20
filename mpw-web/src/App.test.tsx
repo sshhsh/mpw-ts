@@ -19,6 +19,7 @@ vi.mock('@mpw/core/worker', () => ({ MPW: { create } }));
 
 import App from './App';
 import { STORAGE_KEY } from './lib/history';
+import { encryptHistory } from './lib/historyTransfer';
 
 describe('App session workflow', () => {
   beforeEach(() => {
@@ -98,8 +99,40 @@ describe('App session workflow', () => {
       screen.getByRole('dialog', { name: '迁移网站历史' }),
     ).toBeInTheDocument();
     expect(screen.getByText(/只能由相同姓名和主密码/)).toBeInTheDocument();
+    expect(screen.getByText('导出迁移文本')).toBeInTheDocument();
+    expect(screen.getByText('导入迁移文本')).toBeInTheDocument();
     expect(screen.getByText('使用摄像头扫描')).toBeInTheDocument();
     expect(screen.getByText('选择二维码图片')).toBeInTheDocument();
+  });
+
+  it('imports encrypted history from text', async () => {
+    await unlock();
+    const key = new Uint8Array(32);
+    const transferText = await encryptHistory(
+      [
+        {
+          id: 'imported',
+          site: 'imported.example',
+          counter: 2,
+          template: 'long',
+          lastUsedAt: Date.now(),
+        },
+      ],
+      key,
+    );
+    deriveHistoryTransferKey.mockResolvedValue(key);
+
+    fireEvent.click(screen.getByRole('button', { name: '迁移网站历史' }));
+    fireEvent.click(screen.getByRole('button', { name: /导入迁移文本/ }));
+    fireEvent.change(screen.getByRole('textbox', { name: '要导入的迁移文本' }), {
+      target: { value: transferText },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '导入并合并' }));
+
+    expect(await screen.findByText('已合并 1 条历史')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(localStorage.getItem(STORAGE_KEY)).toContain('imported.example'),
+    );
   });
 
   it('invalidates the key and returns to unlock when locked', async () => {

@@ -747,7 +747,8 @@ footer {
   display: none;
 }
 .transfer-export,
-.transfer-import {
+.transfer-import,
+.transfer-text {
   display: grid;
   justify-items: center;
   gap: 12px;
@@ -785,6 +786,30 @@ footer {
   contain: paint;
 }
 .transfer-import .primary-button {
+  min-width: 0;
+}
+.transfer-text {
+  width: 100%;
+}
+.transfer-text textarea {
+  width: 100%;
+  min-height: 220px;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  outline: 0;
+  color: var(--ink);
+  background: white;
+  font: 11px/1.5 var(--mono);
+  overflow-wrap: anywhere;
+}
+.transfer-text textarea:focus {
+  outline: 2px solid rgba(35, 105, 83, 0.22);
+  border-color: var(--green);
+}
+.transfer-text .primary-button {
   min-width: 0;
 }
 .transfer-error {

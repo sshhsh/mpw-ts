@@ -4,6 +4,7 @@ import {
   Clipboard,
   Eye,
   EyeOff,
+  FileText,
   Globe2,
   Github,
   History,
@@ -389,8 +390,11 @@ function HistoryTransfer({
   onClose,
   onImport,
 }: HistoryTransferProps) {
-  const [mode, setMode] = useState<'menu' | 'export' | 'import'>('menu');
+  const [mode, setMode] = useState<
+    'menu' | 'export' | 'import' | 'text-export' | 'text-import'
+  >('menu');
   const [frames, setFrames] = useState<string[]>([]);
+  const [transferText, setTransferText] = useState('');
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState('');
@@ -446,6 +450,64 @@ function HistoryTransfer({
       );
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function exportText() {
+    setTransferError('');
+    setExporting(true);
+    try {
+      const key = await mpw.deriveHistoryTransferKey();
+      try {
+        setTransferText(await encryptHistory(entries, key));
+        setMode('text-export');
+      } finally {
+        key.fill(0);
+      }
+    } catch (cause) {
+      setTransferError(
+        cause instanceof Error ? cause.message : '无法导出历史。',
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function importText() {
+    const encoded = transferText.trim();
+    if (!encoded) {
+      setTransferError('请粘贴迁移文本。');
+      return;
+    }
+    setTransferError('');
+    setExporting(true);
+    try {
+      const key = await mpw.deriveHistoryTransferKey();
+      try {
+        const imported = await decryptHistory(encoded, key);
+        onImport(imported);
+        setProgress(`已合并 ${imported.length} 条历史`);
+        setTransferText('');
+        setMode('text-import');
+      } finally {
+        key.fill(0);
+      }
+    } catch (cause) {
+      setTransferError(
+        cause instanceof Error ? cause.message : '无法导入历史。',
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function copyTransferText() {
+    try {
+      await navigator.clipboard.writeText(transferText);
+      setProgress('迁移文本已复制');
+      setTransferError('');
+    } catch {
+      setTransferError('无法访问剪贴板，请手动复制。');
     }
   }
 
@@ -557,7 +619,7 @@ function HistoryTransfer({
         {mode === 'menu' && (
           <div className="transfer-menu">
             <p>
-              二维码使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。
+              迁移数据使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。
             </p>
             <button
               className="transfer-option"
@@ -575,6 +637,34 @@ function HistoryTransfer({
                   {exporting ? '正在加密历史…' : '显示迁移二维码'}
                 </strong>
                 <small>导出全部 {entries.length} 条历史</small>
+              </span>
+            </button>
+            <button
+              className="transfer-option"
+              type="button"
+              onClick={() => void exportText()}
+              disabled={entries.length === 0 || exporting}
+            >
+              <FileText size={22} />
+              <span>
+                <strong>导出迁移文本</strong>
+                <small>复制全部 {entries.length} 条加密历史</small>
+              </span>
+            </button>
+            <button
+              className="transfer-option"
+              type="button"
+              onClick={() => {
+                setTransferText('');
+                setProgress('');
+                setTransferError('');
+                setMode('text-import');
+              }}
+            >
+              <Clipboard size={22} />
+              <span>
+                <strong>导入迁移文本</strong>
+                <small>粘贴另一台设备导出的加密文本</small>
               </span>
             </button>
             <button
@@ -674,6 +764,75 @@ function HistoryTransfer({
             </label>
             <button className="text-button" type="button" onClick={resetImport}>
               重新开始
+            </button>
+          </div>
+        )}
+        {mode === 'text-export' && (
+          <div className="transfer-text">
+            <textarea
+              value={transferText}
+              readOnly
+              aria-label="导出的迁移文本"
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <div className="transfer-progress">
+              {progress || '复制这段加密文本到另一台设备'}
+            </div>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => void copyTransferText()}
+            >
+              <Clipboard size={18} />
+              复制迁移文本
+            </button>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => {
+                setTransferText('');
+                setProgress('');
+                setMode('menu');
+              }}
+            >
+              返回
+            </button>
+          </div>
+        )}
+        {mode === 'text-import' && (
+          <div className="transfer-text">
+            <textarea
+              value={transferText}
+              onChange={(event) => setTransferText(event.target.value)}
+              placeholder="粘贴迁移文本"
+              aria-label="要导入的迁移文本"
+              autoFocus
+            />
+            {progress && <div className="transfer-progress">{progress}</div>}
+            <button
+              className="primary-button"
+              type="button"
+              disabled={!transferText.trim() || exporting}
+              onClick={() => void importText()}
+            >
+              {exporting ? (
+                <LoaderCircle className="spin" size={18} />
+              ) : (
+                <Clipboard size={18} />
+              )}
+              {exporting ? '正在解密历史…' : '导入并合并'}
+            </button>
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => {
+                setTransferText('');
+                setProgress('');
+                setTransferError('');
+                setMode('menu');
+              }}
+            >
+              返回
             </button>
           </div>
         )}

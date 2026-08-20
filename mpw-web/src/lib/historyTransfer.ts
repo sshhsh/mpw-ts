@@ -71,7 +71,7 @@ export async function encryptHistory(
 ): Promise<string> {
   const serialized = textEncoder.encode(JSON.stringify(entries));
   if (serialized.length > MAX_ENCODED_BYTES) {
-    throw new Error('历史数据过大，无法生成二维码。');
+    throw new Error('历史数据过大，无法导出。');
   }
   const compressed = await transform(serialized, new CompressionStream('gzip'));
   const nonce = crypto.getRandomValues(new Uint8Array(12));
@@ -137,7 +137,7 @@ export async function decryptHistory(
       throw new Error('Invalid entry');
     return entries as SiteHistoryEntry[];
   } catch {
-    throw new Error('身份不匹配或二维码数据已损坏。');
+    throw new Error('身份不匹配或迁移数据已损坏。');
   }
 }
 
