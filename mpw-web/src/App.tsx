@@ -28,7 +28,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 
-import { MPW, TEMPLATES, type TemplateName } from '@mpw/core'
+import { TEMPLATES, type TemplateName } from '@mpw/core'
+import { MPW } from '@mpw/core/worker'
 
 import './App.css'
 import {

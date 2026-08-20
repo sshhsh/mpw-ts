@@ -23,6 +23,23 @@ mpw.invalidate();
 
 The default entry requires `globalThis.crypto.subtle`. The TypeScript scrypt implementation yields periodically so it does not monopolize the browser event loop, but key derivation remains intentionally expensive.
 
+For browser applications, the Worker entry keeps scrypt, the derived master key,
+and subsequent cryptographic operations in a dedicated thread:
+
+```ts
+import { MPW } from '@mpw/core/worker';
+
+const mpw = await MPW.create('Jane Doe', 'correct horse battery staple');
+const password = await mpw.generateAuthentication('example.com');
+
+mpw.invalidate();
+```
+
+Each instance owns one module Web Worker. Call `invalidate()` when the session is
+locked or the page is disposed; it immediately terminates the worker and rejects
+pending calls. The Worker entry requires module Worker and `import.meta.url`
+support from the browser or bundler.
+
 ## Node.js usage
 
 ```ts

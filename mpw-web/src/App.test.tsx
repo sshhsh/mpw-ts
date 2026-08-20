@@ -8,10 +8,7 @@ const { create, deriveHistoryTransferKey, generateAuthentication, invalidate } =
   invalidate: vi.fn(),
 }))
 
-vi.mock('@mpw/core', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@mpw/core')>()
-  return { ...original, MPW: { create } }
-})
+vi.mock('@mpw/core/worker', () => ({ MPW: { create } }))
 
 import App from './App'
 import { STORAGE_KEY } from './lib/history'

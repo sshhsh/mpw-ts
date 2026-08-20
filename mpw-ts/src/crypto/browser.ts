@@ -31,34 +31,41 @@ async function pbkdf2Sha256(
   return new Uint8Array(result);
 }
 
-export const browserCryptoProvider: CryptoProvider = {
-  pbkdf2Sha256,
+export function createBrowserCryptoProvider(
+  schedule?: () => Promise<void>,
+): CryptoProvider {
+  return {
+    pbkdf2Sha256,
 
-  async scrypt(password, salt, cost, blockSize, parallelization, keyLength) {
-    return scrypt(
-      { pbkdf2Sha256 },
-      password,
-      salt,
-      cost,
-      blockSize,
-      parallelization,
-      keyLength,
-    );
-  },
+    async scrypt(password, salt, cost, blockSize, parallelization, keyLength) {
+      return scrypt(
+        { pbkdf2Sha256 },
+        password,
+        salt,
+        cost,
+        blockSize,
+        parallelization,
+        keyLength,
+        schedule,
+      );
+    },
 
-  async hmacSha256(keyBytes, data) {
-    const key = await globalThis.crypto.subtle.importKey(
-      'raw',
-      asBufferSource(keyBytes),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign'],
-    );
-    const result = await globalThis.crypto.subtle.sign(
-      'HMAC',
-      key,
-      asBufferSource(data),
-    );
-    return new Uint8Array(result);
-  },
-};
+    async hmacSha256(keyBytes, data) {
+      const key = await globalThis.crypto.subtle.importKey(
+        'raw',
+        asBufferSource(keyBytes),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign'],
+      );
+      const result = await globalThis.crypto.subtle.sign(
+        'HMAC',
+        key,
+        asBufferSource(data),
+      );
+      return new Uint8Array(result);
+    },
+  };
+}
+
+export const browserCryptoProvider = createBrowserCryptoProvider();
