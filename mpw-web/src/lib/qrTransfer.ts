@@ -164,17 +164,6 @@ export function createCameraScanner(
   const scanner = new QrScanner(video, (result) => onDecode(result.data), {
     preferredCamera: 'environment',
     maxScansPerSecond: 1,
-    calculateScanRegion: (video) => {
-      const size = Math.round(
-        Math.min(video.videoWidth, video.videoHeight) * 0.7,
-      );
-      return {
-        x: Math.round((video.videoWidth - size) / 2),
-        y: Math.round((video.videoHeight - size) / 2),
-        width: size,
-        height: size,
-      };
-    },
     returnDetailedScanResult: true,
     onDecodeError: (error) => {
       if (error instanceof Error) onError(error.message);
