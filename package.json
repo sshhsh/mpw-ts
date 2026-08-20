@@ -10,7 +10,7 @@
     "dev": "npm run dev --workspace mpw-web",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
+    "lint": "prettier --check . --config mpw-ts/prettier.config.mjs --ignore-path mpw-ts/.prettierignore && npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "check": "npm run check --workspaces --if-present"
   },

@@ -74,23 +74,23 @@ npm run preview --workspace mpw-web
 浏览器端：
 
 ```ts
-import { MPW } from '@mpw/core'
+import { MPW } from '@mpw/core';
 
-const mpw = await MPW.create('Jane Doe', 'correct horse battery staple')
-const password = await mpw.generateAuthentication('example.com')
+const mpw = await MPW.create('Jane Doe', 'correct horse battery staple');
+const password = await mpw.generateAuthentication('example.com');
 
-mpw.invalidate()
+mpw.invalidate();
 ```
 
 Node.js 端：
 
 ```ts
-import { MPW } from '@mpw/core/node'
+import { MPW } from '@mpw/core/node';
 
-const mpw = await MPW.create('Jane Doe', 'correct horse battery staple')
-const password = await mpw.generateAuthentication('example.com')
+const mpw = await MPW.create('Jane Doe', 'correct horse battery staple');
+const password = await mpw.generateAuthentication('example.com');
 
-mpw.invalidate()
+mpw.invalidate();
 ```
 
 支持的模板包括 `maximum`、`long`、`medium`、`basic`、`short`、`pin`、`name` 和 `phrase`。核心库也提供 identification 和 recovery namespace；当前 Web 前端聚焦密码生成。

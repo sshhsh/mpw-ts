@@ -1,8 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-:root { --paper:#fbfaf5; --canvas:#f4f1e8; --ink:#17221e; --ink-soft:#34423d; --muted:#758079; --forest:#15352d; --green:#236953; --line:#dedacf; --line-strong:#cbc6b9; --sans:'Noto Sans SC','Microsoft YaHei',sans-serif; --mono:'IBM Plex Mono',Consolas,monospace; color:var(--ink); background:var(--canvas); font:400 15px/1.5 var(--sans); font-synthesis:none; text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; }
-* { box-sizing:border-box; }
-html { min-width:320px; background:var(--canvas); }
-body { min-width:320px; min-height:100svh; margin:0; background-color:var(--canvas); background-image:linear-gradient(rgba(21,53,45,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(21,53,45,.022) 1px,transparent 1px); background-size:24px 24px; }
-button,input,select { letter-spacing:0; }
-input::placeholder { color:#a39f96; }
-button:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+:root {
+  --paper: #fbfaf5;
+  --canvas: #f4f1e8;
+  --ink: #17221e;
+  --ink-soft: #34423d;
+  --muted: #758079;
+  --forest: #15352d;
+  --green: #236953;
+  --line: #dedacf;
+  --line-strong: #cbc6b9;
+  --sans: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --mono: 'IBM Plex Mono', Consolas, monospace;
+  color: var(--ink);
+  background: var(--canvas);
+  font: 400 15px/1.5 var(--sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 320px;
+  background: var(--canvas);
+}
+body {
+  min-width: 320px;
+  min-height: 100svh;
+  margin: 0;
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(rgba(21, 53, 45, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 53, 45, 0.022) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+button,
+input,
+select {
+  letter-spacing: 0;
+}
+input::placeholder {
+  color: #a39f96;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}

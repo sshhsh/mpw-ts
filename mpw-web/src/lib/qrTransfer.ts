@@ -1,42 +1,42 @@
-import QRCode from 'qrcode'
-import QrScanner from 'qr-scanner'
+import QRCode from 'qrcode';
+import QrScanner from 'qr-scanner';
 
-import type { SiteHistoryEntry } from './history'
+import type { SiteHistoryEntry } from './history';
 
-const FRAME_VERSION = 1
-const DEFAULT_CHUNK_SIZE = 320
-const MAX_FRAMES = 10_000
+const FRAME_VERSION = 1;
+const DEFAULT_CHUNK_SIZE = 320;
+const MAX_FRAMES = 10_000;
 
 export interface QrTransferFrame {
-  v: number
-  b: string
-  i: number
-  t: number
-  d: string
+  v: number;
+  b: string;
+  i: number;
+  t: number;
+  d: string;
 }
 
 export interface QrTransferProgress {
-  batchId: string
-  received: number
-  total: number
-  added: boolean
+  batchId: string;
+  received: number;
+  total: number;
+  added: boolean;
 }
 
 function randomBatchId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(9))
+  const bytes = crypto.getRandomValues(new Uint8Array(9));
   return btoa(String.fromCharCode(...bytes))
     .replaceAll('+', '-')
     .replaceAll('/', '_')
-    .replace(/=+$/, '')
+    .replace(/=+$/, '');
 }
 
 function digest(value: string): string {
-  let hash = 2166136261
+  let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
   }
-  return (hash >>> 0).toString(16).padStart(8, '0')
+  return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 export function createQrFrames(
@@ -44,12 +44,12 @@ export function createQrFrames(
   chunkSize = DEFAULT_CHUNK_SIZE,
 ): string[] {
   if (!encoded || !Number.isInteger(chunkSize) || chunkSize < 100) {
-    throw new Error('Invalid QR payload')
+    throw new Error('Invalid QR payload');
   }
-  const total = Math.ceil(encoded.length / chunkSize)
-  if (total > MAX_FRAMES) throw new Error('二维码帧数过多。')
-  const batchId = randomBatchId()
-  const checksum = digest(encoded)
+  const total = Math.ceil(encoded.length / chunkSize);
+  if (total > MAX_FRAMES) throw new Error('二维码帧数过多。');
+  const batchId = randomBatchId();
+  const checksum = digest(encoded);
   return Array.from({ length: total }, (_, index) =>
     JSON.stringify({
       v: FRAME_VERSION,
@@ -58,13 +58,14 @@ export function createQrFrames(
       t: total,
       d: `${checksum}.${encoded.slice(index * chunkSize, (index + 1) * chunkSize)}`,
     } satisfies QrTransferFrame),
-  )
+  );
 }
 
 export function parseQrFrame(value: string): QrTransferFrame {
-  const parsed: unknown = JSON.parse(value)
-  if (typeof parsed !== 'object' || parsed === null) throw new Error('二维码格式无效。')
-  const frame = parsed as Partial<QrTransferFrame>
+  const parsed: unknown = JSON.parse(value);
+  if (typeof parsed !== 'object' || parsed === null)
+    throw new Error('二维码格式无效。');
+  const frame = parsed as Partial<QrTransferFrame>;
   if (
     frame.v !== FRAME_VERSION ||
     typeof frame.b !== 'string' ||
@@ -79,68 +80,80 @@ export function parseQrFrame(value: string): QrTransferFrame {
     frame.i >= frame.t ||
     typeof frame.d !== 'string'
   ) {
-    throw new Error('二维码格式无效。')
+    throw new Error('二维码格式无效。');
   }
-  return frame as QrTransferFrame
+  return frame as QrTransferFrame;
 }
 
 export class QrFrameCollector {
-  private batchId = ''
-  private total = 0
-  private checksum = ''
-  private complete = false
-  private readonly frames = new Map<number, string>()
+  private batchId = '';
+  private total = 0;
+  private checksum = '';
+  private complete = false;
+  private readonly frames = new Map<number, string>();
 
   add(value: string): QrTransferProgress & { complete?: string } {
-    const frame = parseQrFrame(value)
-    const separator = frame.d.indexOf('.')
-    if (separator <= 0) throw new Error('二维码校验信息无效。')
-    const checksum = frame.d.slice(0, separator)
-    const payload = frame.d.slice(separator + 1)
+    const frame = parseQrFrame(value);
+    const separator = frame.d.indexOf('.');
+    if (separator <= 0) throw new Error('二维码校验信息无效。');
+    const checksum = frame.d.slice(0, separator);
+    const payload = frame.d.slice(separator + 1);
     if (!this.batchId) {
-      this.batchId = frame.b
-      this.total = frame.t
-      this.checksum = checksum
+      this.batchId = frame.b;
+      this.total = frame.t;
+      this.checksum = checksum;
     }
-    if (frame.b !== this.batchId || frame.t !== this.total || checksum !== this.checksum) {
-      throw new Error('二维码不属于当前迁移批次。')
+    if (
+      frame.b !== this.batchId ||
+      frame.t !== this.total ||
+      checksum !== this.checksum
+    ) {
+      throw new Error('二维码不属于当前迁移批次。');
     }
-    const added = !this.frames.has(frame.i)
-    this.frames.set(frame.i, payload)
+    const added = !this.frames.has(frame.i);
+    this.frames.set(frame.i, payload);
     const progress = {
       batchId: this.batchId,
       received: this.frames.size,
       total: this.total,
       added,
-    }
-    if (this.complete || this.frames.size !== this.total) return progress
-    const encoded = Array.from({ length: this.total }, (_, index) => this.frames.get(index)).join('')
-    if (digest(encoded) !== this.checksum) throw new Error('二维码数据校验失败。')
-    this.complete = true
-    return { ...progress, complete: encoded }
+    };
+    if (this.complete || this.frames.size !== this.total) return progress;
+    const encoded = Array.from({ length: this.total }, (_, index) =>
+      this.frames.get(index),
+    ).join('');
+    if (digest(encoded) !== this.checksum)
+      throw new Error('二维码数据校验失败。');
+    this.complete = true;
+    return { ...progress, complete: encoded };
   }
 
   reset(): void {
-    this.batchId = ''
-    this.total = 0
-    this.checksum = ''
-    this.complete = false
-    this.frames.clear()
+    this.batchId = '';
+    this.total = 0;
+    this.checksum = '';
+    this.complete = false;
+    this.frames.clear();
   }
 }
 
-export function renderQrFrame(canvas: HTMLCanvasElement, frame: string): Promise<void> {
+export function renderQrFrame(
+  canvas: HTMLCanvasElement,
+  frame: string,
+): Promise<void> {
   return QRCode.toCanvas(canvas, frame, {
     errorCorrectionLevel: 'M',
     margin: 4,
     width: 440,
     color: { dark: '#15352d', light: '#ffffff' },
-  })
+  });
 }
 
 export async function scanQrImage(file: File): Promise<string> {
-  const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true })
-  return result.data
+  const result = await QrScanner.scanImage(file, {
+    returnDetailedScanResult: true,
+  });
+  return result.data;
 }
 
 export function createCameraScanner(
@@ -148,32 +161,30 @@ export function createCameraScanner(
   onDecode: (value: string) => void,
   onError: (message: string) => void,
 ): QrScanner {
-  const scanner = new QrScanner(
-    video,
-    (result) => onDecode(result.data),
-    {
-      preferredCamera: 'environment',
-      maxScansPerSecond: 1,
-      calculateScanRegion: (video) => {
-        const size = Math.round(Math.min(video.videoWidth, video.videoHeight) * 0.7)
-        return {
-          x: Math.round((video.videoWidth - size) / 2),
-          y: Math.round((video.videoHeight - size) / 2),
-          width: size,
-          height: size,
-        }
-      },
-      returnDetailedScanResult: true,
-      onDecodeError: (error) => {
-        if (error instanceof Error) onError(error.message)
-      },
+  const scanner = new QrScanner(video, (result) => onDecode(result.data), {
+    preferredCamera: 'environment',
+    maxScansPerSecond: 1,
+    calculateScanRegion: (video) => {
+      const size = Math.round(
+        Math.min(video.videoWidth, video.videoHeight) * 0.7,
+      );
+      return {
+        x: Math.round((video.videoWidth - size) / 2),
+        y: Math.round((video.videoHeight - size) / 2),
+        width: size,
+        height: size,
+      };
     },
-  )
-  scanner.$canvas.getContext('2d', { alpha: false, willReadFrequently: true })
-  return scanner
+    returnDetailedScanResult: true,
+    onDecodeError: (error) => {
+      if (error instanceof Error) onError(error.message);
+    },
+  });
+  scanner.$canvas.getContext('2d', { alpha: false, willReadFrequently: true });
+  return scanner;
 }
 
-export { DEFAULT_CHUNK_SIZE, FRAME_VERSION, MAX_FRAMES }
+export { DEFAULT_CHUNK_SIZE, FRAME_VERSION, MAX_FRAMES };
 
-export type { SiteHistoryEntry }
-export type { QrScanner }
+export type { SiteHistoryEntry };
+export type { QrScanner };

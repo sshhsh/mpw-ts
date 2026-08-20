@@ -1,17 +1,17 @@
-import { execFileSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process';
 
-import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
-import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import { defineConfig } from 'vitest/config';
 
 function resolveCommit(): string {
-  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7)
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
   try {
     return execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], {
       encoding: 'utf8',
-    }).trim()
+    }).trim();
   } catch {
-    return 'unknown'
+    return 'unknown';
   }
 }
 
@@ -57,4 +57,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
   },
-})
+});
