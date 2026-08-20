@@ -41,14 +41,9 @@ import { MPW } from '@mpw/core/worker';
 
 import './App.css';
 import {
-  clearHistory,
-  loadHistory,
-  mergeHistory,
-  removeHistory,
-  saveHistory,
-  upsertHistory,
   type SiteHistoryEntry,
 } from './lib/history';
+import { useHistory } from './lib/useHistory';
 import { decryptHistory, encryptHistory } from './lib/historyTransfer';
 import {
   createCameraScanner,
@@ -870,7 +865,13 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const [history, setHistory] = useState<SiteHistoryEntry[]>(loadHistory);
+  const {
+    entries: history,
+    upsert: upsertHistoryEntry,
+    remove: removeHistoryEntry,
+    merge: mergeHistoryEntries,
+    clear: clearHistoryEntries,
+  } = useHistory();
   const [search, setSearch] = useState('');
   const [transferOpen, setTransferOpen] = useState(false);
   const [mpw, setMpw] = useState<MpwInstance | null>(null);
@@ -887,11 +888,6 @@ function App() {
       invalidate();
     };
   }, []);
-
-  function storeHistory(entries: SiteHistoryEntry[]) {
-    setHistory(entries);
-    saveHistory(entries);
-  }
 
   async function unlock(event: FormEvent) {
     event.preventDefault();
@@ -955,7 +951,7 @@ function App() {
       });
       setResult(generated);
       setShowResult(false);
-      storeHistory(upsertHistory(history, { site: target, counter, template }));
+      upsertHistoryEntry({ site: target, counter, template });
     } catch (cause) {
       setError(
         cause instanceof Error ? `生成失败：${cause.message}` : '生成失败。',
@@ -988,16 +984,15 @@ function App() {
   }
 
   function removeEntry(id: string) {
-    storeHistory(removeHistory(history, id));
+    removeHistoryEntry(id);
   }
   function clearEntries() {
     if (!window.confirm('清除全部网站历史？')) return;
-    clearHistory();
-    setHistory([]);
+    clearHistoryEntries();
   }
 
   function importEntries(entries: SiteHistoryEntry[]) {
-    storeHistory(mergeHistory(history, entries));
+    mergeHistoryEntries(entries);
   }
 
   if (!isUnlocked) {
