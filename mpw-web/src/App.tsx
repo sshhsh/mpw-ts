@@ -32,24 +32,15 @@ import { TEMPLATES, type TemplateName } from '@mpw/core';
 import { MPW } from '@mpw/core/worker';
 
 import './App.css';
+import HistoryItem from './components/HistoryItem';
+import HistoryTransfer from './components/HistoryTransfer';
 import {
   type SiteHistoryEntry,
 } from './lib/history';
+import { templateLabel, templateMetadata } from './lib/templateMetadata';
 import { useHistory } from './lib/useHistory';
-import HistoryTransfer from './components/HistoryTransfer';
 
 type MpwInstance = Awaited<ReturnType<typeof MPW.create>>;
-
-const templateLabels: Record<TemplateName, string> = {
-  maximum: '最高强度 · 20 位',
-  long: '长密码 · 14 位',
-  medium: '中等 · 8 位',
-  basic: '基础 · 8 位',
-  short: '短密码 · 4 位',
-  pin: 'PIN · 4 位数字',
-  name: '用户名 · 9 位',
-  phrase: '短语 · 4 组单词',
-};
 
 function relativeTime(timestamp: number): string {
   const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60_000);
@@ -191,36 +182,15 @@ function HistoryList({
         </div>
       ) : (
         entries.map((entry) => (
-          <article
-            className={`history-item ${selectedId === entry.id ? 'selected' : ''}`}
+          <HistoryItem
             key={entry.id}
-          >
-            <button
-              className="history-load"
-              type="button"
-              onClick={() => onLoad(entry)}
-              aria-label={`载入 ${entry.site}，${templateLabels[entry.template].split(' · ')[0]}，计数器 ${entry.counter}`}
-            >
-              <span className="monogram">
-                {entry.site.charAt(0).toUpperCase()}
-              </span>
-              <span>
-                <strong>{entry.site}</strong>
-                <small>
-                  {templateLabels[entry.template].split(' · ')[0]} · 计数器{' '}
-                  {entry.counter} · {relativeTime(entry.lastUsedAt)}
-                </small>
-              </span>
-            </button>
-            <button
-              className="delete-button"
-              type="button"
-              onClick={() => onRemove(entry.id)}
-              aria-label={`删除 ${entry.site}`}
-            >
-              <X size={15} />
-            </button>
-          </article>
+            entry={entry}
+            selected={selectedId === entry.id}
+            variant="desktop"
+            relativeTime={relativeTime(entry.lastUsedAt)}
+            onLoad={onLoad}
+            onRemove={onRemove}
+          />
         ))
       )}
     </div>
@@ -312,38 +282,15 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
       ) : (
         <div className="history-shortcuts">
           {props.entries.map((entry) => (
-            <div
-              className={`shortcut-wrap ${props.selectedId === entry.id ? 'selected' : ''}`}
+            <HistoryItem
               key={entry.id}
-            >
-              <button
-                className="history-shortcut"
-                type="button"
-                onClick={() => props.onLoad(entry)}
-                aria-label={`载入 ${entry.site}，${templateLabels[entry.template].split(' · ')[0]}，计数器 ${entry.counter}`}
-              >
-                <span className="monogram">
-                  {entry.site.charAt(0).toUpperCase()}
-                </span>
-                <span>
-                  <strong>{entry.site}</strong>
-                  <small>
-                    {templateLabels[entry.template].split(' · ')[0]} · 计数器{' '}
-                    {entry.counter}
-                  </small>
-                </span>
-              </button>
-              {managing && (
-                <button
-                  className="shortcut-delete"
-                  type="button"
-                  onClick={() => props.onRemove(entry.id)}
-                  aria-label={`删除 ${entry.site}`}
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+              entry={entry}
+              selected={props.selectedId === entry.id}
+              variant="mobile"
+              managing={managing}
+              onLoad={props.onLoad}
+              onRemove={props.onRemove}
+            />
           ))}
         </div>
       )}
@@ -620,8 +567,7 @@ function App() {
                     <Settings2 size={16} />
                     <span>高级选项</span>
                     <small>
-                      {templateLabels[template].split(' · ')[0]} · 计数器{' '}
-                      {counter}
+                      {templateMetadata[template].name} · 计数器 {counter}
                     </small>
                     <ChevronDown size={16} />
                   </summary>
@@ -637,7 +583,7 @@ function App() {
                         {(Object.keys(TEMPLATES) as TemplateName[]).map(
                           (name) => (
                             <option key={name} value={name}>
-                              {templateLabels[name]}
+                              {templateLabel(name)}
                             </option>
                           ),
                         )}
