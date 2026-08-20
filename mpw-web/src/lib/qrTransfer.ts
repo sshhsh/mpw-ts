@@ -1,8 +1,6 @@
 import QRCode from 'qrcode';
 import QrScanner from 'qr-scanner';
 
-import type { SiteHistoryEntry } from './history';
-
 const FRAME_VERSION = 1;
 const DEFAULT_CHUNK_SIZE = 320;
 const MAX_FRAMES = 10_000;
@@ -175,5 +173,4 @@ export function createCameraScanner(
 
 export { DEFAULT_CHUNK_SIZE, FRAME_VERSION, MAX_FRAMES };
 
-export type { SiteHistoryEntry };
 export type { QrScanner };
