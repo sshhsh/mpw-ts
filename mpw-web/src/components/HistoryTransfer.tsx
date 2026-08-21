@@ -56,7 +56,7 @@ function HistoryTransfer({
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState('');
-  const [exporting, setExporting] = useState(false);
+  const [isProcessingTransfer, setIsProcessingTransfer] = useState(false);
   const [transferError, setTransferError] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -104,19 +104,15 @@ function HistoryTransfer({
     fallback = '无法迁移历史。',
   ): Promise<T | null> {
     setTransferError('');
-    setExporting(true);
+    setIsProcessingTransfer(true);
     try {
       return await operation();
     } catch (cause) {
-      reportTransferError(cause, fallback);
+      setTransferError(cause instanceof Error ? cause.message : fallback);
       return null;
     } finally {
-      setExporting(false);
+      setIsProcessingTransfer(false);
     }
-  }
-
-  function reportTransferError(cause: unknown, fallback: string): void {
-    setTransferError(cause instanceof Error ? cause.message : fallback);
   }
 
   function createEncryptedTransfer(): Promise<string> {
@@ -202,7 +198,9 @@ function HistoryTransfer({
       onImport(imported);
       setProgress(`已合并 ${imported.length} 条历史`);
     } catch (cause) {
-      reportTransferError(cause, '无法读取二维码。');
+      setTransferError(
+        cause instanceof Error ? cause.message : '无法读取二维码。',
+      );
     } finally {
       processingRef.current = false;
     }
@@ -217,7 +215,6 @@ function HistoryTransfer({
     const scanner = createCameraScanner(
       videoRef.current,
       (value) => void consumeFrame(value),
-      () => undefined,
     );
     scannerRef.current = scanner;
     try {
@@ -236,7 +233,9 @@ function HistoryTransfer({
       try {
         await consumeFrame(await scanQrImage(file));
       } catch (cause) {
-        reportTransferError(cause, '图片中没有可用二维码。');
+        setTransferError(
+          cause instanceof Error ? cause.message : '图片中没有可用二维码。',
+        );
         break;
       }
     }
@@ -284,16 +283,18 @@ function HistoryTransfer({
                 className="transfer-option"
                 type="button"
                 onClick={() => void exportHistory()}
-                disabled={entries.length === 0 || exporting}
+                disabled={entries.length === 0 || isProcessingTransfer}
               >
-                {exporting ? (
+                {isProcessingTransfer ? (
                   <LoaderCircle className="spin" size={22} />
                 ) : (
                   <QrCode size={22} />
                 )}
                 <span>
                   <strong>
-                    {exporting ? '正在加密历史…' : '显示迁移二维码'}
+                    {isProcessingTransfer
+                      ? '正在加密历史…'
+                      : '显示迁移二维码'}
                   </strong>
                   <small>导出全部 {entries.length} 条历史</small>
                 </span>
@@ -332,7 +333,7 @@ function HistoryTransfer({
                 className="transfer-option"
                 type="button"
                 onClick={() => void exportText()}
-                disabled={entries.length === 0 || exporting}
+                disabled={entries.length === 0 || isProcessingTransfer}
               >
                 <FileText size={22} />
                 <span>
@@ -462,15 +463,15 @@ function HistoryTransfer({
             <button
               className="primary-button"
               type="button"
-              disabled={!transferText.trim() || exporting}
+              disabled={!transferText.trim() || isProcessingTransfer}
               onClick={() => void importText()}
             >
-              {exporting ? (
+              {isProcessingTransfer ? (
                 <LoaderCircle className="spin" size={18} />
               ) : (
                 <Clipboard size={18} />
               )}
-              {exporting ? '正在解密历史…' : '导入并合并'}
+              {isProcessingTransfer ? '正在解密历史…' : '导入并合并'}
             </button>
             <button className="text-button" type="button" onClick={returnToMenu}>
               返回

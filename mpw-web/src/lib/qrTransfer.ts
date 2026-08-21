@@ -156,15 +156,11 @@ export async function scanQrImage(file: File): Promise<string> {
 export function createCameraScanner(
   video: HTMLVideoElement,
   onDecode: (value: string) => void,
-  onError: (message: string) => void,
 ): QrScanner {
   const scanner = new QrScanner(video, (result) => onDecode(result.data), {
     preferredCamera: 'environment',
     maxScansPerSecond: 1,
     returnDetailedScanResult: true,
-    onDecodeError: (error) => {
-      if (error instanceof Error) onError(error.message);
-    },
   });
   scanner.$canvas.getContext('2d', { alpha: false, willReadFrequently: true });
   return scanner;
