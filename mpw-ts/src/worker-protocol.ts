@@ -1,26 +1,20 @@
-import type { TemplateName } from './constants.js';
-import type { GenerateOptions } from './mpw.js';
-
-type AuthenticationOptions = Omit<GenerateOptions, 'namespace'>;
-type PurposeOptions = Omit<GenerateOptions, 'namespace' | 'template'> & {
-  template?: TemplateName;
-};
+import type { GenerateOptions, GeneratePurposeOptions } from './mpw.js';
 
 export interface WorkerCallMap {
   generate: { site: string; options?: GenerateOptions; result: string };
   generateAuthentication: {
     site: string;
-    options?: AuthenticationOptions;
+    options?: GeneratePurposeOptions;
     result: string;
   };
   generateIdentification: {
     site: string;
-    options?: PurposeOptions;
+    options?: GeneratePurposeOptions;
     result: string;
   };
   generateRecovery: {
     site: string;
-    options?: PurposeOptions;
+    options?: GeneratePurposeOptions;
     result: string;
   };
   deriveHistoryTransferKey: { result: Uint8Array };

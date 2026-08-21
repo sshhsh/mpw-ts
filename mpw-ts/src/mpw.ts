@@ -29,6 +29,8 @@ export interface GenerateOptions {
   namespace?: string;
 }
 
+export type GeneratePurposeOptions = Omit<GenerateOptions, 'namespace'>;
+
 export class MPW {
   static readonly VERSION = VERSION;
   static readonly NAMESPACE = NAMESPACE;
@@ -136,7 +138,7 @@ export class MPW {
 
   generateAuthentication(
     site: string,
-    options: Omit<GenerateOptions, 'namespace'> = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.generate(site, {
       ...options,
@@ -146,9 +148,7 @@ export class MPW {
 
   generateIdentification(
     site: string,
-    options: Omit<GenerateOptions, 'namespace' | 'template'> & {
-      template?: TemplateName;
-    } = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.generate(site, {
       template: 'name',
@@ -159,9 +159,7 @@ export class MPW {
 
   generateRecovery(
     site: string,
-    options: Omit<GenerateOptions, 'namespace' | 'template'> & {
-      template?: TemplateName;
-    } = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.generate(site, {
       template: 'phrase',

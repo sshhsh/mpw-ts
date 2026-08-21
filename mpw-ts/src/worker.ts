@@ -3,10 +3,9 @@ import {
   IDENTIFICATION_NAMESPACE,
   NAMESPACE,
   RECOVERY_NAMESPACE,
-  type TemplateName,
   VERSION,
 } from './constants.js';
-import type { GenerateOptions } from './mpw.js';
+import type { GenerateOptions, GeneratePurposeOptions } from './mpw.js';
 import type {
   SerializedWorkerError,
   WorkerCall,
@@ -88,7 +87,7 @@ export class MPW {
 
   generateAuthentication(
     site: string,
-    options: Omit<GenerateOptions, 'namespace'> = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.call({
       type: 'call',
@@ -100,9 +99,7 @@ export class MPW {
 
   generateIdentification(
     site: string,
-    options: Omit<GenerateOptions, 'namespace' | 'template'> & {
-      template?: TemplateName;
-    } = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.call({
       type: 'call',
@@ -114,9 +111,7 @@ export class MPW {
 
   generateRecovery(
     site: string,
-    options: Omit<GenerateOptions, 'namespace' | 'template'> & {
-      template?: TemplateName;
-    } = {},
+    options: GeneratePurposeOptions = {},
   ): Promise<string> {
     return this.call({
       type: 'call',
