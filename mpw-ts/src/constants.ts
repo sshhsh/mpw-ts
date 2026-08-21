@@ -1,5 +1,12 @@
 export const VERSION = 3 as const;
 
+export const MIN_COUNTER = 1;
+export const MAX_COUNTER = 0xffffffff;
+
+export function isValidCounter(value: number): boolean {
+  return Number.isInteger(value) && value >= MIN_COUNTER && value <= MAX_COUNTER;
+}
+
 export const NAMESPACE = 'com.lyndir.masterpassword';
 export const AUTHENTICATION_NAMESPACE = NAMESPACE;
 export const IDENTIFICATION_NAMESPACE = `${NAMESPACE}.login`;

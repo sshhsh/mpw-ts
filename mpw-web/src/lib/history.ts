@@ -1,4 +1,4 @@
-import { TEMPLATES, type TemplateName } from '@mpw/core';
+import { isValidCounter, TEMPLATES, type TemplateName } from '@mpw/core';
 
 export interface SiteHistoryEntry {
   id: string;
@@ -10,12 +10,16 @@ export interface SiteHistoryEntry {
 
 const STORAGE_KEY = 'mpw.site-history';
 
+export function normalizeSite(site: string): string {
+  return site.trim().toLowerCase();
+}
+
 export function historyEntryId(
   site: string,
   template: TemplateName,
   counter: number,
 ): string {
-  return `${encodeURIComponent(site.trim().toLocaleLowerCase())}:${template}:${counter}`;
+  return `${encodeURIComponent(normalizeSite(site))}:${template}:${counter}`;
 }
 
 export function parseHistoryEntry(value: unknown): SiteHistoryEntry | null {
@@ -25,9 +29,7 @@ export function parseHistoryEntry(value: unknown): SiteHistoryEntry | null {
     typeof entry.site !== 'string' ||
     entry.site.trim().length === 0 ||
     typeof entry.counter !== 'number' ||
-    !Number.isInteger(entry.counter) ||
-    entry.counter < 1 ||
-    entry.counter > 0xffffffff ||
+    !isValidCounter(entry.counter) ||
     typeof entry.template !== 'string' ||
     !Object.hasOwn(TEMPLATES, entry.template) ||
     typeof entry.lastUsedAt !== 'number' ||

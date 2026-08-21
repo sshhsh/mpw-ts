@@ -28,13 +28,20 @@ import {
   type FormEvent,
 } from 'react';
 
-import { TEMPLATES, type TemplateName } from '@mpw/core';
+import {
+  MAX_COUNTER,
+  MIN_COUNTER,
+  TEMPLATES,
+  type TemplateName,
+} from '@mpw/core';
 import { MPW } from '@mpw/core/worker';
 
 import './App.css';
 import HistoryItem from './components/HistoryItem';
 import HistoryTransfer from './components/HistoryTransfer';
 import {
+  historyEntryId,
+  normalizeSite,
   type SiteHistoryEntry,
 } from './lib/history';
 import { templateLabel, templateMetadata } from './lib/templateMetadata';
@@ -199,10 +206,10 @@ function HistoryList({
 
 function DesktopHistory(props: HistoryProps) {
   const filtered = useMemo(() => {
-    const query = props.search.trim().toLocaleLowerCase();
+    const query = normalizeSite(props.search);
     return query
       ? props.entries.filter((entry) =>
-          entry.site.toLocaleLowerCase().includes(query),
+          normalizeSite(entry.site).includes(query),
         )
       : props.entries;
   }, [props.entries, props.search]);
@@ -466,13 +473,7 @@ function App() {
     );
   }
 
-  const selectedId =
-    history.find(
-      (entry) =>
-        entry.site === site &&
-        entry.counter === counter &&
-        entry.template === template,
-    )?.id ?? '';
+  const selectedId = historyEntryId(site, template, counter);
   const historyProps: HistoryProps = {
     entries: history,
     search,
@@ -603,8 +604,8 @@ function App() {
                         </button>
                         <input
                           type="number"
-                          min="1"
-                          max="4294967295"
+                          min={MIN_COUNTER}
+                          max={MAX_COUNTER}
                           value={counter}
                           onChange={(event) =>
                             setCounter(
@@ -617,7 +618,7 @@ function App() {
                           type="button"
                           onClick={() =>
                             setCounter((value) =>
-                              Math.min(0xffffffff, value + 1),
+                              Math.min(MAX_COUNTER, value + 1),
                             )
                           }
                           aria-label="增加计数器"

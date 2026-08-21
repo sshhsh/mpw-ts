@@ -1,6 +1,9 @@
 import {
   AUTHENTICATION_NAMESPACE,
   IDENTIFICATION_NAMESPACE,
+  isValidCounter,
+  MAX_COUNTER,
+  MIN_COUNTER,
   NAMESPACE,
   PASSWORD_CHARACTERS,
   RECOVERY_NAMESPACE,
@@ -85,9 +88,9 @@ export class MPW {
   ): Promise<Uint8Array> {
     this.assertValid();
     if (site.length === 0) throw new TypeError('site must not be empty');
-    if (!Number.isInteger(counter) || counter < 1 || counter > 0xffffffff) {
+    if (!isValidCounter(counter)) {
       throw new RangeError(
-        'counter must be an integer between 1 and 4294967295',
+        `counter must be an integer between ${MIN_COUNTER} and ${MAX_COUNTER}`,
       );
     }
 

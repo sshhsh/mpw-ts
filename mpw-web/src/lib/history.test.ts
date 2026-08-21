@@ -59,6 +59,18 @@ describe('site history storage', () => {
     });
   });
 
+  it('normalizes site identity independently of case and surrounding spaces', () => {
+    let entries = upsertHistory([], base, 100);
+    entries = upsertHistory(entries, { ...base, site: '  EXAMPLE.COM  ' }, 200);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      id: 'example.com:long:1',
+      site: 'EXAMPLE.COM',
+      lastUsedAt: 200,
+    });
+  });
+
   it('sorts newest first without discarding older entries', () => {
     let entries = Array.from(
       { length: 55 },
