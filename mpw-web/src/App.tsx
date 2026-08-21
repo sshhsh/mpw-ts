@@ -32,15 +32,6 @@ import { useHistory } from './lib/useHistory';
 import { useGenerator } from './lib/useGenerator';
 import { useUnlock } from './lib/useUnlock';
 
-function relativeTime(timestamp: number): string {
-  const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60_000);
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes} 分钟前`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} 小时前`;
-  return `${Math.floor(hours / 24)} 天前`;
-}
-
 function BuildInfo() {
   return (
     <div className="build-info">
@@ -177,7 +168,6 @@ function HistoryList({
             entry={entry}
             selected={selectedId === entry.id}
             variant="desktop"
-            relativeTime={relativeTime(entry.lastUsedAt)}
             onLoad={onLoad}
             onRemove={onRemove}
           />

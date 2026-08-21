@@ -8,9 +8,17 @@ interface HistoryItemProps {
   selected: boolean;
   variant: 'desktop' | 'mobile';
   managing?: boolean;
-  relativeTime?: string;
   onLoad: (entry: SiteHistoryEntry) => void;
   onRemove: (id: string) => void;
+}
+
+function formatRelativeTime(timestamp: number): string {
+  const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60_000);
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} 小时前`;
+  return `${Math.floor(hours / 24)} 天前`;
 }
 
 function HistoryItem({
@@ -18,11 +26,12 @@ function HistoryItem({
   selected,
   variant,
   managing = false,
-  relativeTime,
   onLoad,
   onRemove,
 }: HistoryItemProps) {
   const templateName = templateMetadata[entry.template].name;
+  const relativeTime =
+    variant === 'desktop' ? formatRelativeTime(entry.lastUsedAt) : '';
   const content = (
     <>
       <span className="monogram">{entry.site.charAt(0).toUpperCase()}</span>

@@ -81,6 +81,7 @@ describe('App session workflow', () => {
       counter: 1,
       template: 'long',
     });
+    expect(screen.getByText(/长密码 · 计数器 1 · 刚刚/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '显示或隐藏结果' }));
     expect(screen.getByText('ZedaFaxcZaso9*')).not.toHaveClass('masked');
     await waitFor(() =>
