@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
+import { MIN_COUNTER } from '@mpw/core';
 import type { TemplateName } from '@mpw/core';
 
 export function useGenerator() {
   const [site, setSite] = useState('');
-  const [counter, setCounter] = useState(1);
+  const [counter, setCounter] = useState(MIN_COUNTER);
   const [template, setTemplate] = useState<TemplateName>('long');
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [result, setResult] = useState('');
@@ -12,7 +13,7 @@ export function useGenerator() {
 
   function reset(): void {
     setSite('');
-    setCounter(1);
+    setCounter(MIN_COUNTER);
     setTemplate('long');
     setAdvancedOpen(false);
     setResult('');
@@ -27,7 +28,9 @@ export function useGenerator() {
     setSite(entry.site);
     setCounter(entry.counter);
     setTemplate(entry.template);
-    setAdvancedOpen(entry.counter !== 1 || entry.template !== 'long');
+    setAdvancedOpen(
+      entry.counter !== MIN_COUNTER || entry.template !== 'long',
+    );
     setResult('');
     setShowResult(false);
   }

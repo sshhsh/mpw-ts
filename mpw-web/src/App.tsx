@@ -55,6 +55,10 @@ function relativeTime(timestamp: number): string {
   return `${Math.floor(hours / 24)} 天前`;
 }
 
+function clampCounter(value: number): number {
+  return Math.min(MAX_COUNTER, Math.max(MIN_COUNTER, value));
+}
+
 function BuildInfo() {
   return (
     <div className="build-info">
@@ -576,7 +580,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCounter((value) => Math.max(1, value - 1))
+                            setCounter((value) => clampCounter(value - 1))
                           }
                           aria-label="减少计数器"
                         >
@@ -589,7 +593,9 @@ function App() {
                           value={counter}
                           onChange={(event) =>
                             setCounter(
-                              Math.max(1, Number(event.target.value) || 1),
+                              clampCounter(
+                                Number(event.target.value) || MIN_COUNTER,
+                              ),
                             )
                           }
                           aria-label="计数器"
@@ -597,9 +603,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCounter((value) =>
-                              Math.min(MAX_COUNTER, value + 1),
-                            )
+                            setCounter((value) => clampCounter(value + 1))
                           }
                           aria-label="增加计数器"
                         >
