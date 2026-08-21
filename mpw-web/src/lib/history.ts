@@ -63,6 +63,12 @@ export function parseHistoryEntries(
   return entries;
 }
 
+function sortHistory(entries: SiteHistoryEntry[]): SiteHistoryEntry[] {
+  return [...entries].sort(
+    (left, right) => right.lastUsedAt - left.lastUsedAt,
+  );
+}
+
 export function loadHistory(
   storage: Storage = localStorage,
 ): SiteHistoryEntry[] {
@@ -70,9 +76,7 @@ export function loadHistory(
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return (parseHistoryEntries(parsed) ?? []).sort(
-      (left, right) => right.lastUsedAt - left.lastUsedAt,
-    );
+    return sortHistory(parseHistoryEntries(parsed) ?? []);
   } catch {
     return [];
   }
@@ -117,9 +121,7 @@ export function mergeHistory(
       merged.set(entry.id, entry);
     }
   }
-  return [...merged.values()].sort(
-    (left, right) => right.lastUsedAt - left.lastUsedAt,
-  );
+  return sortHistory([...merged.values()]);
 }
 
 export function clearHistory(storage: Storage = localStorage): void {
