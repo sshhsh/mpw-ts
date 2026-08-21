@@ -49,6 +49,20 @@ export function parseHistoryEntry(value: unknown): SiteHistoryEntry | null {
   };
 }
 
+export function parseHistoryEntries(
+  value: unknown,
+  rejectInvalid = false,
+): SiteHistoryEntry[] | null {
+  if (!Array.isArray(value)) return null;
+  const entries: SiteHistoryEntry[] = [];
+  for (const candidate of value) {
+    const entry = parseHistoryEntry(candidate);
+    if (entry) entries.push(entry);
+    else if (rejectInvalid) return null;
+  }
+  return entries;
+}
+
 export function loadHistory(
   storage: Storage = localStorage,
 ): SiteHistoryEntry[] {
@@ -56,12 +70,9 @@ export function loadHistory(
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const entries = parsed
-      .map(parseHistoryEntry)
-      .filter((entry): entry is SiteHistoryEntry => entry !== null)
-      .sort((left, right) => right.lastUsedAt - left.lastUsedAt);
-    return entries;
+    return (parseHistoryEntries(parsed) ?? []).sort(
+      (left, right) => right.lastUsedAt - left.lastUsedAt,
+    );
   } catch {
     return [];
   }
@@ -99,9 +110,8 @@ export function mergeHistory(
   incoming: SiteHistoryEntry[],
 ): SiteHistoryEntry[] {
   const merged = new Map<string, SiteHistoryEntry>();
-  for (const value of [...current, ...incoming]) {
-    const entry = parseHistoryEntry(value);
-    if (!entry) continue;
+  const entries = parseHistoryEntries([...current, ...incoming]) ?? [];
+  for (const entry of entries) {
     const existing = merged.get(entry.id);
     if (!existing || entry.lastUsedAt > existing.lastUsedAt) {
       merged.set(entry.id, entry);

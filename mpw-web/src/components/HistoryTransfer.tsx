@@ -101,6 +101,25 @@ function HistoryTransfer({
     }
   }
 
+  async function runTransfer<T>(operation: () => Promise<T>): Promise<T> {
+    setTransferError('');
+    setExporting(true);
+    try {
+      return await operation();
+    } catch (cause) {
+      setTransferError(
+        cause instanceof Error ? cause.message : '无法迁移历史。',
+      );
+      throw cause;
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  function createEncryptedTransfer(): Promise<string> {
+    return withTransferKey((key) => encryptHistory(entries, key));
+  }
+
   function resetFeedback(): void {
     setProgress('');
     setTransferError('');
@@ -121,39 +140,23 @@ function HistoryTransfer({
   }
 
   async function exportHistory() {
-    setTransferError('');
-    setExporting(true);
     try {
-      const encoded = await withTransferKey((key) =>
-        encryptHistory(entries, key),
-      );
+      const encoded = await runTransfer(createEncryptedTransfer);
       setFrames(createQrFrames(encoded));
       setFrameIndex(0);
       setPlaying(true);
       setMode('export');
-    } catch (cause) {
-      setTransferError(
-        cause instanceof Error ? cause.message : '无法导出历史。',
-      );
-    } finally {
-      setExporting(false);
+    } catch {
+      // Feedback is handled by runTransfer.
     }
   }
 
   async function exportText() {
-    setTransferError('');
-    setExporting(true);
     try {
-      setTransferText(
-        await withTransferKey((key) => encryptHistory(entries, key)),
-      );
+      setTransferText(await runTransfer(createEncryptedTransfer));
       setMode('text-export');
-    } catch (cause) {
-      setTransferError(
-        cause instanceof Error ? cause.message : '无法导出历史。',
-      );
-    } finally {
-      setExporting(false);
+    } catch {
+      // Feedback is handled by runTransfer.
     }
   }
 
@@ -163,21 +166,15 @@ function HistoryTransfer({
       setTransferError('请粘贴迁移文本。');
       return;
     }
-    setTransferError('');
-    setExporting(true);
     try {
-      const imported = await withTransferKey((key) =>
-        decryptHistory(encoded, key),
+      const imported = await runTransfer(() =>
+        withTransferKey((key) => decryptHistory(encoded, key)),
       );
       onImport(imported);
       setProgress(`已合并 ${imported.length} 条历史`);
       setTransferText('');
-    } catch (cause) {
-      setTransferError(
-        cause instanceof Error ? cause.message : '无法导入历史。',
-      );
-    } finally {
-      setExporting(false);
+    } catch {
+      // Feedback is handled by runTransfer.
     }
   }
 

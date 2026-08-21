@@ -1,4 +1,4 @@
-import { parseHistoryEntry, type SiteHistoryEntry } from './history';
+import { parseHistoryEntries, type SiteHistoryEntry } from './history';
 
 const PROTOCOL_VERSION = 1;
 const PROTOCOL_PURPOSE = 'mpw-history-transfer';
@@ -131,11 +131,9 @@ export async function decryptHistory(
     if (serialized.length > MAX_ENCODED_BYTES)
       throw new Error('Oversized data');
     const parsed: unknown = JSON.parse(textDecoder.decode(serialized));
-    if (!Array.isArray(parsed)) throw new Error('Invalid history');
-    const entries = parsed.map(parseHistoryEntry);
-    if (entries.some((entry) => entry === null))
-      throw new Error('Invalid entry');
-    return entries as SiteHistoryEntry[];
+    const entries = parseHistoryEntries(parsed, true);
+    if (!entries) throw new Error('Invalid history');
+    return entries;
   } catch {
     throw new Error('身份不匹配或迁移数据已损坏。');
   }
