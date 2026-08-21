@@ -44,7 +44,7 @@ import {
 import { templateLabel, templateMetadata } from './lib/templateMetadata';
 import { useHistory } from './lib/useHistory';
 import { useGenerator } from './lib/useGenerator';
-import { useMpwSession } from './lib/useMpwSession';
+import { useUnlock } from './lib/useUnlock';
 
 function relativeTime(timestamp: number): string {
   const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60_000);
@@ -312,11 +312,6 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
 }
 
 function App() {
-  const [fullName, setFullName] = useState('');
-  const [masterPassword, setMasterPassword] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [showMaster, setShowMaster] = useState(false);
-  const [isUnlocking, setIsUnlocking] = useState(false);
   const {
     site,
     changeSite,
@@ -335,7 +330,6 @@ function App() {
   } = useGenerator();
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
   const {
     entries: history,
     upsert: upsertHistoryEntry,
@@ -345,35 +339,24 @@ function App() {
   } = useHistory();
   const [search, setSearch] = useState('');
   const [transferOpen, setTransferOpen] = useState(false);
-  const { mpw, unlock: unlockMpw, lock: lockMpw } = useMpwSession();
-
-  async function unlock(event: FormEvent) {
-    event.preventDefault();
-    const name = fullName.trim();
-    if (!name || !masterPassword) {
-      setError('请输入完整姓名和主密码。');
-      return;
-    }
-    setIsUnlocking(true);
-    setError('');
-    try {
-      await unlockMpw(name, masterPassword);
-      setFullName(name);
-      setMasterPassword('');
-      setShowMaster(false);
-      setIsUnlocked(true);
-    } catch (cause) {
-      setError(
-        cause instanceof Error ? `解锁失败：${cause.message}` : '解锁失败。',
-      );
-    } finally {
-      setIsUnlocking(false);
-    }
-  }
+  const unlockState = useUnlock();
+  const {
+    mpw,
+    fullName,
+    masterPassword,
+    showMaster,
+    isUnlocking,
+    error,
+    setFullName,
+    setMasterPassword,
+    setShowMaster,
+    setError,
+    unlock,
+    reset: resetUnlock,
+  } = unlockState;
 
   function lockSession() {
-    lockMpw();
-    setIsUnlocked(false);
+    resetUnlock();
     setFullName('');
     setMasterPassword('');
     resetGenerator();
@@ -442,7 +425,7 @@ function App() {
     mergeHistoryEntries(entries);
   }
 
-  if (!isUnlocked) {
+  if (!mpw) {
     return (
       <div className="app-shell locked">
         <UnlockView
