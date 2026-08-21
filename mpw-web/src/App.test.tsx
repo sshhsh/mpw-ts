@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -194,6 +195,36 @@ describe('App session workflow', () => {
       })[0],
     );
     expect(screen.getByRole('spinbutton', { name: '计数器' })).toHaveValue(1);
+  });
+
+  it('filters website history from the mobile search box', async () => {
+    await unlock();
+    const siteInput = screen.getByRole('textbox', { name: '网站或服务' });
+
+    for (const site of ['alpha.example', 'beta.example']) {
+      fireEvent.change(siteInput, { target: { value: site } });
+      fireEvent.click(screen.getByRole('button', { name: '生成密码' }));
+      await waitFor(() =>
+        expect(localStorage.getItem(STORAGE_KEY)).toContain(site),
+      );
+    }
+
+    const mobileSearch = screen.getByRole('textbox', {
+      name: '搜索移动端网站历史',
+    });
+    const mobileHistory = mobileSearch.closest('section');
+    expect(mobileHistory).not.toBeNull();
+
+    fireEvent.change(mobileSearch, { target: { value: 'alpha' } });
+    expect(
+      within(mobileHistory!).getByRole('button', { name: /载入 alpha\.example/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(mobileHistory!).queryByRole('button', { name: /载入 beta\.example/ }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(mobileSearch, { target: { value: 'missing' } });
+    expect(within(mobileHistory!).getByText('没有匹配的网站')).toBeInTheDocument();
   });
 
   it('clears the site and resets all generation options together', async () => {

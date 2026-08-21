@@ -871,6 +871,11 @@ footer {
     flex: 0 0 auto;
     margin-bottom: 8px;
   }
+  .mobile-search-box {
+    flex: 0 0 40px;
+    height: 40px;
+    margin-bottom: 8px;
+  }
   .history-shortcuts {
     width: 100%;
     min-width: 0;

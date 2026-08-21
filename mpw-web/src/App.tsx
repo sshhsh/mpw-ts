@@ -237,8 +237,17 @@ function DesktopHistory(props: HistoryProps) {
   );
 }
 
-function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
+function MobileHistory(props: HistoryProps) {
   const [managing, setManaging] = useState(false);
+  const filtered = useMemo(() => {
+    const query = normalizeSite(props.search);
+    return query
+      ? props.entries.filter((entry) =>
+          normalizeSite(entry.site).includes(query),
+        )
+      : props.entries;
+  }, [props.entries, props.search]);
+
   return (
     <section className="mobile-history" aria-labelledby="mobile-history-title">
       <div className="mobile-history-heading">
@@ -255,13 +264,24 @@ function MobileHistory(props: Omit<HistoryProps, 'search' | 'onSearchChange'>) {
           </button>
         )}
       </div>
+      <label className="search-box mobile-search-box">
+        <Search size={17} />
+        <input
+          value={props.search}
+          onChange={(event) => props.onSearchChange(event.target.value)}
+          placeholder="搜索网站"
+          aria-label="搜索移动端网站历史"
+        />
+      </label>
       {props.entries.length === 0 ? (
         <p className="mobile-history-empty">
           生成第一个密码后，网站会保存在这里。
         </p>
+      ) : filtered.length === 0 ? (
+        <p className="mobile-history-empty">没有匹配的网站</p>
       ) : (
         <div className="history-shortcuts">
-          {props.entries.map((entry) => (
+          {filtered.map((entry) => (
             <HistoryItem
               key={entry.id}
               entry={entry}
