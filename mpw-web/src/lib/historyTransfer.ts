@@ -1,4 +1,5 @@
 import { parseHistoryEntries, type SiteHistoryEntry } from './history';
+import { decodeBase64Url, encodeBase64Url } from './base64Url';
 
 const PROTOCOL_VERSION = 1;
 const PROTOCOL_PURPOSE = 'mpw-history-transfer';
@@ -15,22 +16,6 @@ interface TransferEnvelope {
   p: string;
   n: string;
   c: string;
-}
-
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary)
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-    .replace(/=+$/, '');
-}
-
-function fromBase64Url(value: string): Uint8Array {
-  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('Invalid encoding');
-  const base64 = value.replaceAll('-', '+').replaceAll('_', '/');
-  const binary = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '='));
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
 async function transform(
@@ -88,10 +73,10 @@ export async function encryptHistory(
   const envelope: TransferEnvelope = {
     v: PROTOCOL_VERSION,
     p: PROTOCOL_PURPOSE,
-    n: toBase64Url(nonce),
-    c: toBase64Url(new Uint8Array(ciphertext)),
+    n: encodeBase64Url(nonce),
+    c: encodeBase64Url(new Uint8Array(ciphertext)),
   };
-  return toBase64Url(textEncoder.encode(JSON.stringify(envelope)));
+  return encodeBase64Url(textEncoder.encode(JSON.stringify(envelope)));
 }
 
 export async function decryptHistory(
@@ -102,7 +87,7 @@ export async function decryptHistory(
     if (encoded.length > MAX_ENCODED_BYTES * 2)
       throw new Error('Oversized data');
     const envelope = JSON.parse(
-      textDecoder.decode(fromBase64Url(encoded)),
+      textDecoder.decode(decodeBase64Url(encoded)),
     ) as Partial<TransferEnvelope>;
     if (
       envelope.v !== PROTOCOL_VERSION ||
@@ -112,7 +97,7 @@ export async function decryptHistory(
     ) {
       throw new Error('Invalid envelope');
     }
-    const nonce = fromBase64Url(envelope.n);
+    const nonce = decodeBase64Url(envelope.n);
     if (nonce.length !== 12) throw new Error('Invalid nonce');
     const key = await importAesKey(keyBytes, 'decrypt');
     const compressed = await crypto.subtle.decrypt(
@@ -122,7 +107,7 @@ export async function decryptHistory(
         additionalData: asBufferSource(authenticatedHeader()),
       },
       key,
-      asBufferSource(fromBase64Url(envelope.c)),
+      asBufferSource(decodeBase64Url(envelope.c)),
     );
     const serialized = await transform(
       new Uint8Array(compressed),

@@ -1,6 +1,8 @@
 import QRCode from 'qrcode';
 import QrScanner from 'qr-scanner';
 
+import { encodeBase64Url } from './base64Url';
+
 const FRAME_VERSION = 1;
 const DEFAULT_CHUNK_SIZE = 320;
 const MAX_FRAMES = 10_000;
@@ -22,10 +24,7 @@ export interface QrTransferProgress {
 
 function randomBatchId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(9));
-  return btoa(String.fromCharCode(...bytes))
-    .replaceAll('+', '-')
-    .replaceAll('/', '_')
-    .replace(/=+$/, '');
+  return encodeBase64Url(bytes);
 }
 
 function digest(value: string): string {

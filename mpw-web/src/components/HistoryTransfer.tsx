@@ -18,10 +18,9 @@ import {
   type ChangeEvent,
 } from 'react';
 
-import { MPW } from '@mpw/core/worker';
-
 import type { SiteHistoryEntry } from '../lib/history';
 import { decryptHistory, encryptHistory } from '../lib/historyTransfer';
+import type { MpwInstance } from '../lib/mpwTypes';
 import {
   createCameraScanner,
   createQrFrames,
@@ -31,7 +30,6 @@ import {
   type QrScanner,
 } from '../lib/qrTransfer';
 
-type MpwInstance = Awaited<ReturnType<typeof MPW.create>>;
 type TransferMode =
   | 'menu'
   | 'export'

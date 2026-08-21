@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { MPW } from '@mpw/core/worker';
 
-type MpwInstance = Awaited<ReturnType<typeof MPW.create>>;
+import type { MpwInstance } from './mpwTypes';
 
 export function useMpwSession() {
   const [mpw, setMpw] = useState<MpwInstance | null>(null);
