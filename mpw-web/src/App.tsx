@@ -319,17 +319,17 @@ function App() {
   const [isUnlocking, setIsUnlocking] = useState(false);
   const {
     site,
-    setSite,
+    changeSite,
     counter,
-    setCounter,
+    changeCounter,
     template,
-    setTemplate,
+    changeTemplate,
     advancedOpen,
-    setAdvancedOpen,
+    toggleAdvanced,
     result,
-    setResult,
+    setGeneratedResult,
     showResult,
-    setShowResult,
+    toggleResultVisibility,
     reset: resetGenerator,
     load: loadGenerator,
   } = useGenerator();
@@ -401,8 +401,7 @@ function App() {
         counter,
         template,
       });
-      setResult(generated);
-      setShowResult(false);
+      setGeneratedResult(generated);
       upsertHistoryEntry({ site: target, counter, template });
     } catch (cause) {
       setError(
@@ -534,8 +533,7 @@ function App() {
                     aria-labelledby="site-label"
                     value={site}
                     onChange={(event) => {
-                      setSite(event.target.value);
-                      setResult('');
+                      changeSite(event.target.value);
                     }}
                     autoComplete="off"
                     placeholder="例如 example.com"
@@ -545,7 +543,7 @@ function App() {
                   className="advanced"
                   open={advancedOpen}
                   onToggle={(event) =>
-                    setAdvancedOpen(event.currentTarget.open)
+                    toggleAdvanced(event.currentTarget.open)
                   }
                 >
                   <summary>
@@ -562,7 +560,7 @@ function App() {
                       <select
                         value={template}
                         onChange={(event) =>
-                          setTemplate(event.target.value as TemplateName)
+                          changeTemplate(event.target.value as TemplateName)
                         }
                       >
                         {(Object.keys(TEMPLATES) as TemplateName[]).map(
@@ -580,7 +578,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCounter((value) => clampCounter(value - 1))
+                            changeCounter(clampCounter(counter - 1))
                           }
                           aria-label="减少计数器"
                         >
@@ -592,7 +590,7 @@ function App() {
                           max={MAX_COUNTER}
                           value={counter}
                           onChange={(event) =>
-                            setCounter(
+                            changeCounter(
                               clampCounter(
                                 Number(event.target.value) || MIN_COUNTER,
                               ),
@@ -603,7 +601,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() =>
-                            setCounter((value) => clampCounter(value + 1))
+                            changeCounter(clampCounter(counter + 1))
                           }
                           aria-label="增加计数器"
                         >
@@ -650,7 +648,7 @@ function App() {
                   className="icon-button"
                   type="button"
                   disabled={!result}
-                  onClick={() => setShowResult((value) => !value)}
+                  onClick={toggleResultVisibility}
                   aria-label="显示或隐藏结果"
                 >
                   {showResult ? <EyeOff size={18} /> : <Eye size={18} />}
