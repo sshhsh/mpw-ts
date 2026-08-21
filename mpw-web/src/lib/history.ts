@@ -114,8 +114,7 @@ export function mergeHistory(
   incoming: SiteHistoryEntry[],
 ): SiteHistoryEntry[] {
   const merged = new Map<string, SiteHistoryEntry>();
-  const entries = parseHistoryEntries([...current, ...incoming]) ?? [];
-  for (const entry of entries) {
+  for (const entry of [...current, ...incoming]) {
     const existing = merged.get(entry.id);
     if (!existing || entry.lastUsedAt > existing.lastUsedAt) {
       merged.set(entry.id, entry);
