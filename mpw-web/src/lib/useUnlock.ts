@@ -7,25 +7,25 @@ export function useUnlock() {
   const [masterPassword, setMasterPassword] = useState('');
   const [showMaster, setShowMaster] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
-  const [error, setError] = useState('');
+  const [unlockError, setUnlockError] = useState('');
   const { mpw, unlock: unlockMpw, lock: lockMpw } = useMpwSession();
 
   async function unlock(event: FormEvent): Promise<void> {
     event.preventDefault();
     const name = fullName.trim();
     if (!name || !masterPassword) {
-      setError('请输入完整姓名和主密码。');
+      setUnlockError('请输入完整姓名和主密码。');
       return;
     }
     setIsUnlocking(true);
-    setError('');
+    setUnlockError('');
     try {
       await unlockMpw(name, masterPassword);
       setFullName(name);
       setMasterPassword('');
       setShowMaster(false);
     } catch (cause) {
-      setError(
+      setUnlockError(
         cause instanceof Error ? `解锁失败：${cause.message}` : '解锁失败。',
       );
     } finally {
@@ -38,7 +38,7 @@ export function useUnlock() {
     setFullName('');
     setMasterPassword('');
     setShowMaster(false);
-    setError('');
+    setUnlockError('');
   }
 
   return {
@@ -47,11 +47,10 @@ export function useUnlock() {
     masterPassword,
     showMaster,
     isUnlocking,
-    error,
+    unlockError,
     setFullName,
     setMasterPassword,
-    setShowMaster,
-    setError,
+    toggleShowMaster: () => setShowMaster((value) => !value),
     unlock,
     reset,
   };

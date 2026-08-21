@@ -330,6 +330,7 @@ function App() {
   } = useGenerator();
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
   const {
     entries: history,
     upsert: upsertHistoryEntry,
@@ -346,19 +347,16 @@ function App() {
     masterPassword,
     showMaster,
     isUnlocking,
-    error,
+    unlockError,
     setFullName,
     setMasterPassword,
-    setShowMaster,
-    setError,
+    toggleShowMaster,
     unlock,
     reset: resetUnlock,
   } = unlockState;
 
   function lockSession() {
     resetUnlock();
-    setFullName('');
-    setMasterPassword('');
     resetGenerator();
     setCopied(false);
     setError('');
@@ -413,16 +411,9 @@ function App() {
     }
   }
 
-  function removeEntry(id: string) {
-    removeHistoryEntry(id);
-  }
   function clearEntries() {
     if (!window.confirm('清除全部网站历史？')) return;
     clearHistoryEntries();
-  }
-
-  function importEntries(entries: SiteHistoryEntry[]) {
-    mergeHistoryEntries(entries);
   }
 
   if (!mpw) {
@@ -433,10 +424,10 @@ function App() {
           masterPassword={masterPassword}
           showMaster={showMaster}
           isUnlocking={isUnlocking}
-          error={error}
+          error={unlockError}
           onFullNameChange={setFullName}
           onMasterPasswordChange={setMasterPassword}
-          onToggleMaster={() => setShowMaster((value) => !value)}
+          onToggleMaster={toggleShowMaster}
           onSubmit={unlock}
         />
       </div>
@@ -450,7 +441,7 @@ function App() {
     selectedId,
     onClear: clearEntries,
     onLoad: loadEntry,
-    onRemove: removeEntry,
+    onRemove: removeHistoryEntry,
     onSearchChange: setSearch,
   };
   return (
@@ -662,7 +653,7 @@ function App() {
         <HistoryTransfer
           entries={history}
           mpw={mpw}
-          onImport={importEntries}
+          onImport={mergeHistoryEntries}
           onClose={() => setTransferOpen(false)}
         />
       )}
