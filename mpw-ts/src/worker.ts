@@ -9,6 +9,8 @@ import {
 import type { GenerateOptions } from './mpw.js';
 import type {
   SerializedWorkerError,
+  WorkerCall,
+  WorkerCallMap,
   WorkerMethod,
   WorkerRequest,
   WorkerRequestWithoutId,
@@ -81,14 +83,19 @@ export class MPW {
   }
 
   generate(site: string, options: GenerateOptions = {}): Promise<string> {
-    return this.callString('generate', site, options);
+    return this.call({ type: 'call', method: 'generate', site, options });
   }
 
   generateAuthentication(
     site: string,
     options: Omit<GenerateOptions, 'namespace'> = {},
   ): Promise<string> {
-    return this.callString('generateAuthentication', site, options);
+    return this.call({
+      type: 'call',
+      method: 'generateAuthentication',
+      site,
+      options,
+    });
   }
 
   generateIdentification(
@@ -97,7 +104,12 @@ export class MPW {
       template?: TemplateName;
     } = {},
   ): Promise<string> {
-    return this.callString('generateIdentification', site, options);
+    return this.call({
+      type: 'call',
+      method: 'generateIdentification',
+      site,
+      options,
+    });
   }
 
   generateRecovery(
@@ -106,18 +118,19 @@ export class MPW {
       template?: TemplateName;
     } = {},
   ): Promise<string> {
-    return this.callString('generateRecovery', site, options);
+    return this.call({
+      type: 'call',
+      method: 'generateRecovery',
+      site,
+      options,
+    });
   }
 
   async deriveHistoryTransferKey(): Promise<Uint8Array> {
-    const value = await this.request({
+    return this.call({
       type: 'call',
       method: 'deriveHistoryTransferKey',
     });
-    if (!(value instanceof Uint8Array)) {
-      throw new Error('MPW worker returned an invalid key');
-    }
-    return value;
   }
 
   invalidate(): void {
@@ -127,16 +140,10 @@ export class MPW {
     this.rejectPending(new Error('MPW instance has been invalidated'));
   }
 
-  private async callString(
-    method: WorkerMethod,
-    site: string,
-    options: GenerateOptions,
-  ): Promise<string> {
-    const value = await this.request({ type: 'call', method, site, options });
-    if (typeof value !== 'string') {
-      throw new Error('MPW worker returned an invalid password');
-    }
-    return value;
+  private call<Method extends WorkerMethod>(
+    request: Extract<WorkerCall, { method: Method }>,
+  ): Promise<WorkerCallMap[Method]['result']> {
+    return this.request(request) as Promise<WorkerCallMap[Method]['result']>;
   }
 
   private request(

@@ -39,14 +39,14 @@ async function handleRequest(request: WorkerRequest): Promise<WorkerResponse> {
         return {
           id: request.id,
           ok: true,
-          value: await mpw.generate(request.site ?? '', request.options),
+          value: await mpw.generate(request.site, request.options),
         };
       case 'generateAuthentication':
         return {
           id: request.id,
           ok: true,
           value: await mpw.generateAuthentication(
-            request.site ?? '',
+            request.site,
             request.options,
           ),
         };
@@ -55,7 +55,7 @@ async function handleRequest(request: WorkerRequest): Promise<WorkerResponse> {
           id: request.id,
           ok: true,
           value: await mpw.generateIdentification(
-            request.site ?? '',
+            request.site,
             request.options,
           ),
         };
@@ -64,7 +64,7 @@ async function handleRequest(request: WorkerRequest): Promise<WorkerResponse> {
           id: request.id,
           ok: true,
           value: await mpw.generateRecovery(
-            request.site ?? '',
+            request.site,
             request.options,
           ),
         };

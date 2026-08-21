@@ -1,11 +1,39 @@
+import type { TemplateName } from './constants.js';
 import type { GenerateOptions } from './mpw.js';
 
-export type WorkerMethod =
-  | 'generate'
-  | 'generateAuthentication'
-  | 'generateIdentification'
-  | 'generateRecovery'
-  | 'deriveHistoryTransferKey';
+type AuthenticationOptions = Omit<GenerateOptions, 'namespace'>;
+type PurposeOptions = Omit<GenerateOptions, 'namespace' | 'template'> & {
+  template?: TemplateName;
+};
+
+export interface WorkerCallMap {
+  generate: { site: string; options?: GenerateOptions; result: string };
+  generateAuthentication: {
+    site: string;
+    options?: AuthenticationOptions;
+    result: string;
+  };
+  generateIdentification: {
+    site: string;
+    options?: PurposeOptions;
+    result: string;
+  };
+  generateRecovery: {
+    site: string;
+    options?: PurposeOptions;
+    result: string;
+  };
+  deriveHistoryTransferKey: { result: Uint8Array };
+}
+
+export type WorkerMethod = keyof WorkerCallMap;
+
+export type WorkerCall = {
+  [Method in WorkerMethod]: { type: 'call'; method: Method } & Omit<
+    WorkerCallMap[Method],
+    'result'
+  >;
+}[WorkerMethod];
 
 export type WorkerRequest =
   | {
@@ -14,13 +42,7 @@ export type WorkerRequest =
       name: string;
       password: string;
     }
-  | {
-      id: number;
-      type: 'call';
-      method: WorkerMethod;
-      site?: string;
-      options?: GenerateOptions;
-    };
+  | (WorkerCall & { id: number });
 
 export type WorkerRequestWithoutId = WorkerRequest extends infer Request
   ? Request extends WorkerRequest
