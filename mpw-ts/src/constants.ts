@@ -4,7 +4,9 @@ export const MIN_COUNTER = 1;
 export const MAX_COUNTER = 0xffffffff;
 
 export function isValidCounter(value: number): boolean {
-  return Number.isInteger(value) && value >= MIN_COUNTER && value <= MAX_COUNTER;
+  return (
+    Number.isInteger(value) && value >= MIN_COUNTER && value <= MAX_COUNTER
+  );
 }
 
 export const NAMESPACE = 'com.lyndir.masterpassword';

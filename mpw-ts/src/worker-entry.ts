@@ -63,10 +63,7 @@ async function handleRequest(request: WorkerRequest): Promise<WorkerResponse> {
         return {
           id: request.id,
           ok: true,
-          value: await mpw.generateRecovery(
-            request.site,
-            request.options,
-          ),
+          value: await mpw.generateRecovery(request.site, request.options),
         };
       case 'deriveHistoryTransferKey':
         return {
