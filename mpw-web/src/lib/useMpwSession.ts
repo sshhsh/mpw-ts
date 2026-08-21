@@ -9,10 +9,15 @@ export function useMpwSession() {
   const mpwRef = useRef<MpwInstance | null>(null);
   const unlockAttemptRef = useRef(0);
 
+  function invalidateSession(): void {
+    mpwRef.current?.invalidate();
+    mpwRef.current = null;
+    setMpw(null);
+  }
+
   useEffect(() => {
     const invalidate = () => {
-      mpwRef.current?.invalidate();
-      mpwRef.current = null;
+      invalidateSession();
     };
     const handlePageHide = (event: PageTransitionEvent) => {
       if (!event.persisted) invalidate();
@@ -26,9 +31,7 @@ export function useMpwSession() {
 
   async function unlock(name: string, password: string): Promise<void> {
     const attempt = ++unlockAttemptRef.current;
-    mpwRef.current?.invalidate();
-    mpwRef.current = null;
-    setMpw(null);
+    invalidateSession();
     const instance = await MPW.create(name, password);
     if (attempt !== unlockAttemptRef.current) {
       instance.invalidate();
@@ -40,9 +43,7 @@ export function useMpwSession() {
 
   function lock(): void {
     unlockAttemptRef.current += 1;
-    mpwRef.current?.invalidate();
-    mpwRef.current = null;
-    setMpw(null);
+    invalidateSession();
   }
 
   return { mpw, unlock, lock };
