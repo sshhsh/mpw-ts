@@ -43,6 +43,7 @@ import {
 } from './lib/history';
 import { templateLabel, templateMetadata } from './lib/templateMetadata';
 import { useHistory } from './lib/useHistory';
+import { useGenerator } from './lib/useGenerator';
 import { useMpwSession } from './lib/useMpwSession';
 
 function relativeTime(timestamp: number): string {
@@ -312,12 +313,22 @@ function App() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showMaster, setShowMaster] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
-  const [site, setSite] = useState('');
-  const [counter, setCounter] = useState(1);
-  const [template, setTemplate] = useState<TemplateName>('long');
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [result, setResult] = useState('');
-  const [showResult, setShowResult] = useState(false);
+  const {
+    site,
+    setSite,
+    counter,
+    setCounter,
+    template,
+    setTemplate,
+    advancedOpen,
+    setAdvancedOpen,
+    result,
+    setResult,
+    showResult,
+    setShowResult,
+    reset: resetGenerator,
+    load: loadGenerator,
+  } = useGenerator();
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
@@ -361,8 +372,7 @@ function App() {
     setIsUnlocked(false);
     setFullName('');
     setMasterPassword('');
-    setSite('');
-    setResult('');
+    resetGenerator();
     setCopied(false);
     setError('');
     setTransferOpen(false);
@@ -410,11 +420,7 @@ function App() {
   }
 
   function loadEntry(entry: SiteHistoryEntry) {
-    setSite(entry.site);
-    setCounter(entry.counter);
-    setTemplate(entry.template);
-    setAdvancedOpen(entry.counter !== 1 || entry.template !== 'long');
-    setResult('');
+    loadGenerator(entry);
     setError('');
     if (window.matchMedia('(pointer: fine)').matches) {
       document.querySelector<HTMLInputElement>('#site-input')?.focus();
@@ -508,11 +514,7 @@ function App() {
                       className="field-clear"
                       type="button"
                       onClick={() => {
-                        setSite('');
-                        setCounter(1);
-                        setTemplate('long');
-                        setAdvancedOpen(false);
-                        setResult('');
+                        resetGenerator();
                         setError('');
                       }}
                       disabled={
