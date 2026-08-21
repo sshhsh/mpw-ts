@@ -1,24 +1,16 @@
 import {
-  Check,
-  ChevronDown,
-  Clipboard,
   Eye,
   EyeOff,
-  Globe2,
   Github,
   History,
   KeyRound,
   LoaderCircle,
   LockKeyhole,
-  Minus,
-  Plus,
   Search,
-  Settings2,
   ShieldCheck,
   QrCode,
   Trash2,
   UserRound,
-  X,
 } from 'lucide-react';
 import {
   useMemo,
@@ -26,14 +18,9 @@ import {
   type FormEvent,
 } from 'react';
 
-import {
-  MAX_COUNTER,
-  MIN_COUNTER,
-  TEMPLATES,
-  type TemplateName,
-} from '@mpw/core';
-
 import './App.css';
+import GeneratedResult from './components/GeneratedResult';
+import GeneratorForm from './components/GeneratorForm';
 import HistoryItem from './components/HistoryItem';
 import HistoryTransfer from './components/HistoryTransfer';
 import {
@@ -41,7 +28,6 @@ import {
   normalizeSite,
   type SiteHistoryEntry,
 } from './lib/history';
-import { templateLabel, templateMetadata } from './lib/templateMetadata';
 import { useHistory } from './lib/useHistory';
 import { useGenerator } from './lib/useGenerator';
 import { useUnlock } from './lib/useUnlock';
@@ -53,10 +39,6 @@ function relativeTime(timestamp: number): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} 小时前`;
   return `${Math.floor(hours / 24)} 天前`;
-}
-
-function clampCounter(value: number): number {
-  return Math.min(MAX_COUNTER, Math.max(MIN_COUNTER, value));
 }
 
 function BuildInfo() {
@@ -480,164 +462,31 @@ function App() {
         <section className="generator" aria-labelledby="generator-title">
           <MobileHistory {...historyProps} />
           <div className="generator-controls">
-            <form onSubmit={generate}>
-              <fieldset className="target-fields" aria-label="密码生成参数">
-                <div className="field site-field">
-                  <div className="field-heading">
-                    <span className="section-label" id="site-label">
-                      <Globe2 size={16} /> 网站或服务
-                    </span>
-                    <button
-                      className="field-clear"
-                      type="button"
-                      onClick={() => {
-                        resetGenerator();
-                        setError('');
-                      }}
-                      disabled={
-                        !site && counter === 1 && template === 'long' && !result
-                      }
-                      aria-label="清空生成参数"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                  <input
-                    id="site-input"
-                    aria-labelledby="site-label"
-                    value={site}
-                    onChange={(event) => {
-                      changeSite(event.target.value);
-                    }}
-                    autoComplete="off"
-                    placeholder="例如 example.com"
-                  />
-                </div>
-                <details
-                  className="advanced"
-                  open={advancedOpen}
-                  onToggle={(event) =>
-                    toggleAdvanced(event.currentTarget.open)
-                  }
-                >
-                  <summary>
-                    <Settings2 size={16} />
-                    <span>高级选项</span>
-                    <small>
-                      {templateMetadata[template].name} · 计数器 {counter}
-                    </small>
-                    <ChevronDown size={16} />
-                  </summary>
-                  <div className="advanced-fields">
-                    <label className="field">
-                      <span>密码模板</span>
-                      <select
-                        value={template}
-                        onChange={(event) =>
-                          changeTemplate(event.target.value as TemplateName)
-                        }
-                      >
-                        {(Object.keys(TEMPLATES) as TemplateName[]).map(
-                          (name) => (
-                            <option key={name} value={name}>
-                              {templateLabel(name)}
-                            </option>
-                          ),
-                        )}
-                      </select>
-                    </label>
-                    <div className="field">
-                      <span>计数器</span>
-                      <div className="stepper">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            changeCounter(clampCounter(counter - 1))
-                          }
-                          aria-label="减少计数器"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <input
-                          type="number"
-                          min={MIN_COUNTER}
-                          max={MAX_COUNTER}
-                          value={counter}
-                          onChange={(event) =>
-                            changeCounter(
-                              clampCounter(
-                                Number(event.target.value) || MIN_COUNTER,
-                              ),
-                            )
-                          }
-                          aria-label="计数器"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            changeCounter(clampCounter(counter + 1))
-                          }
-                          aria-label="增加计数器"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </details>
-              </fieldset>
-              {error && (
-                <div className="error" role="alert">
-                  {error}
-                </div>
-              )}
-              <div className="generate-row">
-                <button
-                  className="primary-button"
-                  type="submit"
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <LoaderCircle className="spin" size={19} />
-                  ) : (
-                    <KeyRound size={19} />
-                  )}
-                  {isGenerating ? '正在生成…' : '生成密码'}
-                </button>
-                <span>首次解锁后，生成只需瞬间</span>
-              </div>
-            </form>
-            <div
-              className={`result ${result ? 'ready' : ''}`}
-              aria-live="polite"
-            >
-              <div>
-                <span>生成结果</span>
-                <strong className={result && !showResult ? 'masked' : ''}>
-                  {result || '等待生成'}
-                </strong>
-              </div>
-              <div className="result-actions">
-                <button
-                  className="icon-button"
-                  type="button"
-                  disabled={!result}
-                  onClick={toggleResultVisibility}
-                  aria-label="显示或隐藏结果"
-                >
-                  {showResult ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-                <button
-                  className="copy-button"
-                  type="button"
-                  disabled={!result}
-                  onClick={copyResult}
-                >
-                  {copied ? <Check size={18} /> : <Clipboard size={18} />}
-                  {copied ? '已复制' : '复制'}
-                </button>
-              </div>
-            </div>
+            <GeneratorForm
+              site={site}
+              counter={counter}
+              template={template}
+              advancedOpen={advancedOpen}
+              error={error}
+              hasResult={Boolean(result)}
+              isGenerating={isGenerating}
+              onSiteChange={changeSite}
+              onCounterChange={changeCounter}
+              onTemplateChange={changeTemplate}
+              onAdvancedToggle={toggleAdvanced}
+              onReset={() => {
+                resetGenerator();
+                setError('');
+              }}
+              onSubmit={generate}
+            />
+            <GeneratedResult
+              result={result}
+              showResult={showResult}
+              copied={copied}
+              onToggleVisibility={toggleResultVisibility}
+              onCopy={() => void copyResult()}
+            />
           </div>
         </section>
         <DesktopHistory {...historyProps} />
