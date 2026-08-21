@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import {
-  clearHistory,
   loadHistory,
   mergeHistory,
   removeHistory,
@@ -14,8 +13,7 @@ export function useHistory() {
   const [entries, setEntries] = useState<SiteHistoryEntry[]>(loadHistory);
 
   useEffect(() => {
-    if (entries.length === 0) clearHistory();
-    else saveHistory(entries);
+    saveHistory(entries);
   }, [entries]);
 
   function upsert(

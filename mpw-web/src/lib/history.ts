@@ -86,7 +86,8 @@ export function saveHistory(
   entries: SiteHistoryEntry[],
   storage: Storage = localStorage,
 ): void {
-  storage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  if (entries.length === 0) storage.removeItem(STORAGE_KEY);
+  else storage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
 export function upsertHistory(
@@ -121,10 +122,6 @@ export function mergeHistory(
     }
   }
   return sortHistory([...merged.values()]);
-}
-
-export function clearHistory(storage: Storage = localStorage): void {
-  storage.removeItem(STORAGE_KEY);
 }
 
 export { STORAGE_KEY };

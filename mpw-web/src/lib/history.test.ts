@@ -29,6 +29,14 @@ describe('site history storage', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toContain('context');
   });
 
+  it('removes storage when saving an empty history', () => {
+    localStorage.setItem(STORAGE_KEY, 'stale');
+
+    saveHistory([]);
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
   it('ignores malformed JSON and invalid entries', () => {
     localStorage.setItem(STORAGE_KEY, '{bad json');
     expect(loadHistory()).toEqual([]);
