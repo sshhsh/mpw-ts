@@ -21,9 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import {
-  useEffect,
   useMemo,
-  useRef,
   useState,
   type FormEvent,
 } from 'react';
@@ -34,7 +32,6 @@ import {
   TEMPLATES,
   type TemplateName,
 } from '@mpw/core';
-import { MPW } from '@mpw/core/worker';
 
 import './App.css';
 import HistoryItem from './components/HistoryItem';
@@ -46,8 +43,7 @@ import {
 } from './lib/history';
 import { templateLabel, templateMetadata } from './lib/templateMetadata';
 import { useHistory } from './lib/useHistory';
-
-type MpwInstance = Awaited<ReturnType<typeof MPW.create>>;
+import { useMpwSession } from './lib/useMpwSession';
 
 function relativeTime(timestamp: number): string {
   const minutes = Math.floor(Math.max(0, Date.now() - timestamp) / 60_000);
@@ -334,20 +330,7 @@ function App() {
   } = useHistory();
   const [search, setSearch] = useState('');
   const [transferOpen, setTransferOpen] = useState(false);
-  const [mpw, setMpw] = useState<MpwInstance | null>(null);
-  const mpwRef = useRef<MpwInstance | null>(null);
-
-  useEffect(() => {
-    const invalidate = () => mpwRef.current?.invalidate();
-    const handlePageHide = (event: PageTransitionEvent) => {
-      if (!event.persisted) invalidate();
-    };
-    window.addEventListener('pagehide', handlePageHide);
-    return () => {
-      window.removeEventListener('pagehide', handlePageHide);
-      invalidate();
-    };
-  }, []);
+  const { mpw, unlock: unlockMpw, lock: lockMpw } = useMpwSession();
 
   async function unlock(event: FormEvent) {
     event.preventDefault();
@@ -359,10 +342,7 @@ function App() {
     setIsUnlocking(true);
     setError('');
     try {
-      mpwRef.current?.invalidate();
-      const instance = await MPW.create(name, masterPassword);
-      mpwRef.current = instance;
-      setMpw(instance);
+      await unlockMpw(name, masterPassword);
       setFullName(name);
       setMasterPassword('');
       setShowMaster(false);
@@ -377,9 +357,7 @@ function App() {
   }
 
   function lockSession() {
-    mpwRef.current?.invalidate();
-    mpwRef.current = null;
-    setMpw(null);
+    lockMpw();
     setIsUnlocked(false);
     setFullName('');
     setMasterPassword('');
@@ -393,7 +371,7 @@ function App() {
   async function generate(event: FormEvent) {
     event.preventDefault();
     const target = site.trim();
-    if (!mpwRef.current) {
+    if (!mpw) {
       lockSession();
       return;
     }
@@ -405,7 +383,7 @@ function App() {
     setError('');
     setCopied(false);
     try {
-      const generated = await mpwRef.current.generateAuthentication(target, {
+      const generated = await mpw.generateAuthentication(target, {
         counter,
         template,
       });
