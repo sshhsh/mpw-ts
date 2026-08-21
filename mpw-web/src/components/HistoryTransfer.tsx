@@ -101,19 +101,23 @@ function HistoryTransfer({
     }
   }
 
-  async function runTransfer<T>(operation: () => Promise<T>): Promise<T> {
+  async function runTransfer<T>(
+    operation: () => Promise<T>,
+  ): Promise<T | null> {
     setTransferError('');
     setExporting(true);
     try {
       return await operation();
     } catch (cause) {
-      setTransferError(
-        cause instanceof Error ? cause.message : '无法迁移历史。',
-      );
-      throw cause;
+      reportTransferError(cause, '无法迁移历史。');
+      return null;
     } finally {
       setExporting(false);
     }
+  }
+
+  function reportTransferError(cause: unknown, fallback: string): void {
+    setTransferError(cause instanceof Error ? cause.message : fallback);
   }
 
   function createEncryptedTransfer(): Promise<string> {
@@ -140,24 +144,19 @@ function HistoryTransfer({
   }
 
   async function exportHistory() {
-    try {
-      const encoded = await runTransfer(createEncryptedTransfer);
-      setFrames(createQrFrames(encoded));
-      setFrameIndex(0);
-      setPlaying(true);
-      setMode('export');
-    } catch {
-      // Feedback is handled by runTransfer.
-    }
+    const encoded = await runTransfer(createEncryptedTransfer);
+    if (encoded === null) return;
+    setFrames(createQrFrames(encoded));
+    setFrameIndex(0);
+    setPlaying(true);
+    setMode('export');
   }
 
   async function exportText() {
-    try {
-      setTransferText(await runTransfer(createEncryptedTransfer));
-      setMode('text-export');
-    } catch {
-      // Feedback is handled by runTransfer.
-    }
+    const encoded = await runTransfer(createEncryptedTransfer);
+    if (encoded === null) return;
+    setTransferText(encoded);
+    setMode('text-export');
   }
 
   async function importText() {
@@ -166,16 +165,13 @@ function HistoryTransfer({
       setTransferError('请粘贴迁移文本。');
       return;
     }
-    try {
-      const imported = await runTransfer(() =>
-        withTransferKey((key) => decryptHistory(encoded, key)),
-      );
-      onImport(imported);
-      setProgress(`已合并 ${imported.length} 条历史`);
-      setTransferText('');
-    } catch {
-      // Feedback is handled by runTransfer.
-    }
+    const imported = await runTransfer(() =>
+      withTransferKey((key) => decryptHistory(encoded, key)),
+    );
+    if (imported === null) return;
+    onImport(imported);
+    setProgress(`已合并 ${imported.length} 条历史`);
+    setTransferText('');
   }
 
   async function copyTransferText() {
@@ -204,9 +200,7 @@ function HistoryTransfer({
       onImport(imported);
       setProgress(`已合并 ${imported.length} 条历史`);
     } catch (cause) {
-      setTransferError(
-        cause instanceof Error ? cause.message : '无法读取二维码。',
-      );
+      reportTransferError(cause, '无法读取二维码。');
     } finally {
       processingRef.current = false;
     }
@@ -240,9 +234,7 @@ function HistoryTransfer({
       try {
         await consumeFrame(await scanQrImage(file));
       } catch (cause) {
-        setTransferError(
-          cause instanceof Error ? cause.message : '图片中没有可用二维码。',
-        );
+        reportTransferError(cause, '图片中没有可用二维码。');
         break;
       }
     }
