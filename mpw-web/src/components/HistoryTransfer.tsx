@@ -101,13 +101,14 @@ function HistoryTransfer({
 
   async function runTransfer<T>(
     operation: () => Promise<T>,
+    fallback = '无法迁移历史。',
   ): Promise<T | null> {
     setTransferError('');
     setExporting(true);
     try {
       return await operation();
     } catch (cause) {
-      reportTransferError(cause, '无法迁移历史。');
+      reportTransferError(cause, fallback);
       return null;
     } finally {
       setExporting(false);
@@ -192,9 +193,12 @@ function HistoryTransfer({
       if (!result.complete) return;
       processingRef.current = true;
       scannerRef.current?.stop();
-      const imported = await withTransferKey((key) =>
-        decryptHistory(result.complete!, key),
+      const imported = await runTransfer(
+        () =>
+          withTransferKey((key) => decryptHistory(result.complete!, key)),
+        '无法读取二维码。',
       );
+      if (imported === null) return;
       onImport(imported);
       setProgress(`已合并 ${imported.length} 条历史`);
     } catch (cause) {
