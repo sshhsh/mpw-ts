@@ -15,8 +15,18 @@ const { create, deriveHistoryTransferKey, generateAuthentication, invalidate } =
     generateAuthentication: vi.fn(),
     invalidate: vi.fn(),
   }));
+const { updateServiceWorker, setNeedRefresh } = vi.hoisted(() => ({
+  updateServiceWorker: vi.fn(),
+  setNeedRefresh: vi.fn(),
+}));
 
 vi.mock('@mpw/core/worker', () => ({ MPW: { create } }));
+vi.mock('virtual:pwa-register/react', () => ({
+  useRegisterSW: () => ({
+    needRefresh: [true, setNeedRefresh],
+    updateServiceWorker,
+  }),
+}));
 
 import App from './App';
 import { STORAGE_KEY } from './lib/history';
@@ -56,6 +66,16 @@ describe('App session workflow', () => {
     expect(
       screen.getByRole('link', { name: '在 GitHub 查看源代码' }),
     ).toHaveAttribute('href', 'https://github.com/sshhsh/mpw-ts');
+  });
+
+  it('shows a prompt for available PWA updates', () => {
+    expect(screen.getByRole('status')).toHaveTextContent('发现新版本');
+
+    fireEvent.click(screen.getByRole('button', { name: '稍后' }));
+    expect(setNeedRefresh).toHaveBeenCalledWith(false);
+
+    fireEvent.click(screen.getByRole('button', { name: '立即更新' }));
+    expect(updateServiceWorker).toHaveBeenCalledWith(true);
   });
 
   it('unlocks locally and generates authentication passwords', async () => {

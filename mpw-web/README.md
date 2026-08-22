@@ -35,4 +35,4 @@ npm run check
 npm run build
 ```
 
-生产构建包含 PWA manifest 和离线 Service Worker。
+生产构建包含 PWA manifest 和离线 Service Worker。Service Worker 发现新版本后，应用会显示更新提示；点击“立即更新”会刷新页面并重新要求解锁，网站历史仍会保留。

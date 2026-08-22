@@ -635,6 +635,82 @@ footer {
   color: var(--muted);
   font: 10px var(--mono);
 }
+.update-prompt {
+  width: min(520px, calc(100% - 32px));
+  box-sizing: border-box;
+  padding: 13px 14px 13px 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--line-strong);
+  border-left: 4px solid var(--green);
+  background: var(--paper);
+  box-shadow: 0 14px 36px rgba(21, 53, 45, 0.18);
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  animation: rise 0.25s ease-out both;
+}
+.update-prompt-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.update-prompt-copy strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+.update-prompt-copy span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.update-prompt-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.update-prompt-dismiss,
+.update-prompt-confirm,
+.update-prompt-close {
+  height: 34px;
+  border: 0;
+  border-radius: 4px;
+}
+.update-prompt-dismiss {
+  padding: 0 9px;
+  color: var(--green);
+  background: transparent;
+  font-size: 12px;
+}
+.update-prompt-confirm {
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 650;
+}
+.update-prompt-close {
+  width: 30px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+}
+.update-prompt-dismiss:hover,
+.update-prompt-close:hover {
+  color: var(--ink);
+  background: rgba(35, 105, 83, 0.08);
+}
+.update-prompt-confirm:hover {
+  background: var(--forest);
+}
 .footer-meta,
 .build-info,
 .build-info a {
@@ -955,6 +1031,29 @@ footer {
   .topbar {
     height: 58px;
     padding: 0 12px 0 16px;
+  }
+  .update-prompt {
+    width: calc(100% - 24px);
+    right: 12px;
+    bottom: 12px;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .update-prompt-copy span {
+    max-width: 220px;
+  }
+  .update-prompt-actions {
+    gap: 3px;
+  }
+  .update-prompt-dismiss {
+    padding: 0 5px;
+  }
+  .update-prompt-confirm {
+    padding: 0 8px;
+  }
+  .update-prompt-close {
+    width: 26px;
   }
   .brand small {
     display: none;

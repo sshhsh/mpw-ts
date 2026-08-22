@@ -12,6 +12,7 @@ import {
 } from './components/HistoryPanels';
 import HistoryTransfer from './components/HistoryTransfer';
 import UnlockView from './components/UnlockView';
+import UpdatePrompt from './components/UpdatePrompt';
 import { historyEntryId } from './lib/history';
 import { useHistory } from './lib/useHistory';
 import { usePasswordGeneration } from './lib/usePasswordGeneration';
@@ -73,6 +74,7 @@ function App() {
           onToggleMaster={toggleShowMaster}
           onSubmit={unlock}
         />
+        <UpdatePrompt />
       </div>
     );
   }
@@ -170,6 +172,7 @@ function App() {
           onClose={() => setTransferOpen(false)}
         />
       )}
+      <UpdatePrompt />
     </div>
   );
 }
