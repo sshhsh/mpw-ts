@@ -67,15 +67,20 @@ describe('site history storage', () => {
     });
   });
 
-  it('normalizes site identity independently of case and surrounding spaces', () => {
+  it('preserves site case in identity while trimming surrounding spaces', () => {
     let entries = upsertHistory([], base, 100);
     entries = upsertHistory(entries, { ...base, site: '  EXAMPLE.COM  ' }, 200);
 
-    expect(entries).toHaveLength(1);
+    expect(entries).toHaveLength(2);
     expect(entries[0]).toMatchObject({
-      id: 'example.com:long:1',
+      id: 'EXAMPLE.COM:long:1',
       site: 'EXAMPLE.COM',
       lastUsedAt: 200,
+    });
+    expect(entries[1]).toMatchObject({
+      id: 'example.com:long:1',
+      site: 'example.com',
+      lastUsedAt: 100,
     });
   });
 

@@ -14,12 +14,16 @@ export function normalizeSite(site: string): string {
   return site.trim().toLowerCase();
 }
 
+function historySiteKey(site: string): string {
+  return site.trim();
+}
+
 export function historyEntryId(
   site: string,
   template: TemplateName,
   counter: number,
 ): string {
-  return `${encodeURIComponent(normalizeSite(site))}:${template}:${counter}`;
+  return `${encodeURIComponent(historySiteKey(site))}:${template}:${counter}`;
 }
 
 export function parseHistoryEntry(value: unknown): SiteHistoryEntry | null {
