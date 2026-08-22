@@ -13,7 +13,7 @@ This package is based on the `mpw-js` implementation by Tom Thorogood. It intent
 ## Browser usage
 
 ```ts
-import { MPW } from 'mpw-ts';
+import { MPW } from '@mpw/core';
 
 const mpw = await MPW.create('Jane Doe', 'correct horse battery staple');
 const password = await mpw.generateAuthentication('example.com');
@@ -43,7 +43,7 @@ support from the browser or bundler.
 ## Node.js usage
 
 ```ts
-import { MPW } from 'mpw-ts/node';
+import { MPW } from '@mpw/core/node';
 
 const mpw = await MPW.create('Jane Doe', 'correct horse battery staple');
 const password = await mpw.generate('example.com', {
