@@ -1,10 +1,11 @@
-import { useState, type SubmitEvent } from 'react';
+import { useState, type SubmitEvent } from "react";
 
-import type { SiteHistoryEntry } from './history';
-import type { MpwInstance } from './mpwTypes';
-import { useGenerator } from './useGenerator';
+import type { SiteHistoryEntry } from "./history";
+import type { MpwInstance } from "./mpwTypes";
+import { useGenerator } from "./useGenerator";
+import { useLanguage } from "./useLanguage";
 
-type HistoryInput = Omit<SiteHistoryEntry, 'id' | 'lastUsedAt'>;
+type HistoryInput = Omit<SiteHistoryEntry, "id" | "lastUsedAt">;
 
 interface UsePasswordGenerationOptions {
   mpw: MpwInstance | null;
@@ -17,15 +18,16 @@ export function usePasswordGeneration({
   onMissingSession,
   onHistoryUpsert,
 }: UsePasswordGenerationOptions) {
+  const { t } = useLanguage();
   const generator = useGenerator();
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   function reset(): void {
     generator.reset();
     setCopied(false);
-    setError('');
+    setError("");
   }
 
   async function generate(event: SubmitEvent): Promise<void> {
@@ -36,11 +38,11 @@ export function usePasswordGeneration({
       return;
     }
     if (!target) {
-      setError('请输入网站或服务。');
+      setError(t("generator.required"));
       return;
     }
     setIsGenerating(true);
-    setError('');
+    setError("");
     setCopied(false);
     try {
       const generated = await mpw.generateAuthentication(target, {
@@ -55,7 +57,9 @@ export function usePasswordGeneration({
       });
     } catch (cause) {
       setError(
-        cause instanceof Error ? `生成失败：${cause.message}` : '生成失败。',
+        cause instanceof Error
+          ? t("generator.failedWithReason", { reason: cause.message })
+          : t("generator.failed"),
       );
     } finally {
       setIsGenerating(false);
@@ -68,15 +72,15 @@ export function usePasswordGeneration({
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      setError('无法访问剪贴板，请手动复制。');
+      setError(t("generator.clipboardFailed"));
     }
   }
 
   function loadEntry(entry: SiteHistoryEntry): void {
     generator.load(entry);
-    setError('');
-    if (window.matchMedia('(pointer: fine)').matches) {
-      document.querySelector<HTMLInputElement>('#site-input')?.focus();
+    setError("");
+    if (window.matchMedia("(pointer: fine)").matches) {
+      document.querySelector<HTMLInputElement>("#site-input")?.focus();
     }
   }
 

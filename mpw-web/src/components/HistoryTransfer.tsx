@@ -10,17 +10,13 @@ import {
   SkipForward,
   Upload,
   X,
-} from 'lucide-react';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from 'react';
+} from "lucide-react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
-import type { SiteHistoryEntry } from '../lib/history';
-import { decryptHistory, encryptHistory } from '../lib/historyTransfer';
-import type { MpwInstance } from '../lib/mpwTypes';
+import type { SiteHistoryEntry } from "../lib/history";
+import { decryptHistory, encryptHistory } from "../lib/historyTransfer";
+import type { MpwInstance } from "../lib/mpwTypes";
+import { useLanguage } from "../lib/useLanguage";
 import {
   createCameraScanner,
   createQrFrames,
@@ -28,14 +24,10 @@ import {
   renderQrFrame,
   scanQrImage,
   type QrScanner,
-} from '../lib/qrTransfer';
+} from "../lib/qrTransfer";
 
 type TransferMode =
-  | 'menu'
-  | 'export'
-  | 'import'
-  | 'text-export'
-  | 'text-import';
+  "menu" | "export" | "import" | "text-export" | "text-import";
 
 interface HistoryTransferProps {
   entries: SiteHistoryEntry[];
@@ -50,14 +42,15 @@ function HistoryTransfer({
   onClose,
   onImport,
 }: HistoryTransferProps) {
-  const [mode, setMode] = useState<TransferMode>('menu');
+  const { t } = useLanguage();
+  const [mode, setMode] = useState<TransferMode>("menu");
   const [frames, setFrames] = useState<string[]>([]);
-  const [transferText, setTransferText] = useState('');
+  const [transferText, setTransferText] = useState("");
   const [frameIndex, setFrameIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [progress, setProgress] = useState('');
+  const [progress, setProgress] = useState("");
   const [isProcessingTransfer, setIsProcessingTransfer] = useState(false);
-  const [transferError, setTransferError] = useState('');
+  const [transferError, setTransferError] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<QrScanner | null>(null);
@@ -67,9 +60,9 @@ function HistoryTransfer({
   useEffect(() => {
     if (!frames.length || !canvasRef.current) return;
     void renderQrFrame(canvasRef.current, frames[frameIndex]).catch(() => {
-      setTransferError('无法生成二维码。');
+      setTransferError(t("transfer.qrGenerateFailed"));
     });
-  }, [frameIndex, frames]);
+  }, [frameIndex, frames, t]);
 
   useEffect(() => {
     if (!playing || frames.length < 2) return;
@@ -101,9 +94,9 @@ function HistoryTransfer({
 
   async function runTransfer<T>(
     operation: () => Promise<T>,
-    fallback = '无法迁移历史。',
+    fallback = t("transfer.failed"),
   ): Promise<T | null> {
-    setTransferError('');
+    setTransferError("");
     setIsProcessingTransfer(true);
     try {
       return await operation();
@@ -120,8 +113,8 @@ function HistoryTransfer({
   }
 
   function resetFeedback(): void {
-    setProgress('');
-    setTransferError('');
+    setProgress("");
+    setTransferError("");
   }
 
   function resetScanner(): void {
@@ -133,9 +126,9 @@ function HistoryTransfer({
   function returnToMenu(): void {
     resetScanner();
     resetFeedback();
-    setTransferText('');
+    setTransferText("");
     setFrames([]);
-    setMode('menu');
+    setMode("menu");
   }
 
   async function exportHistory() {
@@ -144,20 +137,20 @@ function HistoryTransfer({
     setFrames(createQrFrames(encoded));
     setFrameIndex(0);
     setPlaying(true);
-    setMode('export');
+    setMode("export");
   }
 
   async function exportText() {
     const encoded = await runTransfer(createEncryptedTransfer);
     if (encoded === null) return;
     setTransferText(encoded);
-    setMode('text-export');
+    setMode("text-export");
   }
 
   async function importText() {
     const encoded = transferText.trim();
     if (!encoded) {
-      setTransferError('请粘贴迁移文本。');
+      setTransferError(t("transfer.pasteRequired"));
       return;
     }
     const imported = await runTransfer(() =>
@@ -165,17 +158,17 @@ function HistoryTransfer({
     );
     if (imported === null) return;
     onImport(imported);
-    setProgress(`已合并 ${imported.length} 条历史`);
-    setTransferText('');
+    setProgress(t("transfer.merged", { count: imported.length }));
+    setTransferText("");
   }
 
   async function copyTransferText() {
     try {
       await navigator.clipboard.writeText(transferText);
-      setProgress('迁移文本已复制');
-      setTransferError('');
+      setProgress(t("transfer.copied"));
+      setTransferError("");
     } catch {
-      setTransferError('无法访问剪贴板，请手动复制。');
+      setTransferError(t("transfer.clipboardFailed"));
     }
   }
 
@@ -184,22 +177,26 @@ function HistoryTransfer({
     try {
       const result = collectorRef.current.add(value);
       if (result.added) {
-        setProgress(`已收集 ${result.received} / ${result.total} 张`);
+        setProgress(
+          t("transfer.collected", {
+            received: result.received,
+            total: result.total,
+          }),
+        );
       }
       if (!result.complete) return;
       processingRef.current = true;
       scannerRef.current?.stop();
       const imported = await runTransfer(
-        () =>
-          withTransferKey((key) => decryptHistory(result.complete!, key)),
-        '无法读取二维码。',
+        () => withTransferKey((key) => decryptHistory(result.complete!, key)),
+        t("transfer.qrReadFailed"),
       );
       if (imported === null) return;
       onImport(imported);
-      setProgress(`已合并 ${imported.length} 条历史`);
+      setProgress(t("transfer.merged", { count: imported.length }));
     } catch (cause) {
       setTransferError(
-        cause instanceof Error ? cause.message : '无法读取二维码。',
+        cause instanceof Error ? cause.message : t("transfer.qrReadFailed"),
       );
     } finally {
       processingRef.current = false;
@@ -207,8 +204,8 @@ function HistoryTransfer({
   }
 
   async function startCamera() {
-    setTransferError('');
-    setMode('import');
+    setTransferError("");
+    setMode("import");
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     if (!videoRef.current) return;
     resetScanner();
@@ -220,26 +217,26 @@ function HistoryTransfer({
     try {
       await scanner.start();
     } catch {
-      setTransferError('无法打开摄像头，请允许权限或选择二维码图片。');
+      setTransferError(t("transfer.cameraFailed"));
     }
   }
 
   async function importImages(event: ChangeEvent<HTMLInputElement>) {
     const files = [...(event.target.files ?? [])];
     if (!files.length) return;
-    setMode('import');
-    setTransferError('');
+    setMode("import");
+    setTransferError("");
     for (const file of files) {
       try {
         await consumeFrame(await scanQrImage(file));
       } catch (cause) {
         setTransferError(
-          cause instanceof Error ? cause.message : '图片中没有可用二维码。',
+          cause instanceof Error ? cause.message : t("transfer.imageFailed"),
         );
         break;
       }
     }
-    event.target.value = '';
+    event.target.value = "";
   }
 
   function closeTransfer() {
@@ -249,11 +246,11 @@ function HistoryTransfer({
 
   return (
     <div
-      className={`transfer-backdrop ${mode === 'import' ? 'scanning' : ''}`}
+      className={`transfer-backdrop ${mode === "import" ? "scanning" : ""}`}
       role="presentation"
     >
       <section
-        className={`transfer-dialog ${mode === 'export' ? 'exporting-qr' : ''}`}
+        className={`transfer-dialog ${mode === "export" ? "exporting-qr" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="transfer-title"
@@ -261,24 +258,22 @@ function HistoryTransfer({
         <div className="transfer-heading">
           <div>
             <QrCode size={18} />
-            <h2 id="transfer-title">迁移网站历史</h2>
+            <h2 id="transfer-title">{t("app.migrate")}</h2>
           </div>
           <button
             className="icon-button quiet"
             type="button"
             onClick={closeTransfer}
-            aria-label="关闭历史迁移"
+            aria-label={t("transfer.close")}
           >
             <X size={18} />
           </button>
         </div>
-        {mode === 'menu' && (
+        {mode === "menu" && (
           <div className="transfer-menu">
-            <p>
-              迁移数据使用当前身份加密，只能由相同姓名和主密码解锁的设备导入。
-            </p>
+            <p>{t("transfer.description")}</p>
             <div className="transfer-option-group" aria-labelledby="qr-options">
-              <h3 id="qr-options">二维码</h3>
+              <h3 id="qr-options">{t("transfer.qr")}</h3>
               <button
                 className="transfer-option"
                 type="button"
@@ -293,10 +288,12 @@ function HistoryTransfer({
                 <span>
                   <strong>
                     {isProcessingTransfer
-                      ? '正在加密历史…'
-                      : '显示迁移二维码'}
+                      ? t("transfer.encrypting")
+                      : t("transfer.exportQr")}
                   </strong>
-                  <small>导出全部 {entries.length} 条历史</small>
+                  <small>
+                    {t("transfer.exportQrDetail", { count: entries.length })}
+                  </small>
                 </span>
               </button>
               <button
@@ -306,15 +303,15 @@ function HistoryTransfer({
               >
                 <ScanLine size={22} />
                 <span>
-                  <strong>使用摄像头扫描</strong>
-                  <small>手机建议使用后置摄像头</small>
+                  <strong>{t("transfer.scanCamera")}</strong>
+                  <small>{t("transfer.scanCameraDetail")}</small>
                 </span>
               </button>
               <label className="transfer-option">
                 <Upload size={22} />
                 <span>
-                  <strong>选择二维码图片</strong>
-                  <small>电脑可一次选择多张截图</small>
+                  <strong>{t("transfer.chooseQr")}</strong>
+                  <small>{t("transfer.chooseQrDetail")}</small>
                 </span>
                 <input
                   type="file"
@@ -328,7 +325,7 @@ function HistoryTransfer({
               className="transfer-option-group"
               aria-labelledby="text-options"
             >
-              <h3 id="text-options">文本</h3>
+              <h3 id="text-options">{t("transfer.text")}</h3>
               <button
                 className="transfer-option"
                 type="button"
@@ -337,8 +334,10 @@ function HistoryTransfer({
               >
                 <FileText size={22} />
                 <span>
-                  <strong>导出迁移文本</strong>
-                  <small>复制全部 {entries.length} 条加密历史</small>
+                  <strong>{t("transfer.exportText")}</strong>
+                  <small>
+                    {t("transfer.exportTextDetail", { count: entries.length })}
+                  </small>
                 </span>
               </button>
               <button
@@ -346,27 +345,33 @@ function HistoryTransfer({
                 type="button"
                 onClick={() => {
                   resetFeedback();
-                  setTransferText('');
-                  setMode('text-import');
+                  setTransferText("");
+                  setMode("text-import");
                 }}
               >
                 <Clipboard size={22} />
                 <span>
-                  <strong>导入迁移文本</strong>
-                  <small>粘贴另一台设备导出的加密文本</small>
+                  <strong>{t("transfer.importText")}</strong>
+                  <small>{t("transfer.importTextDetail")}</small>
                 </span>
               </button>
             </div>
           </div>
         )}
-        {mode === 'export' && (
+        {mode === "export" && (
           <div className="transfer-export">
             <canvas
               ref={canvasRef}
-              aria-label={`迁移二维码 ${frameIndex + 1}/${frames.length}`}
+              aria-label={t("transfer.frame", {
+                current: frameIndex + 1,
+                total: frames.length,
+              })}
             />
             <div className="transfer-counter">
-              第 {frameIndex + 1} / {frames.length} 张
+              {t("transfer.frame", {
+                current: frameIndex + 1,
+                total: frames.length,
+              })}
             </div>
             <div className="transfer-controls">
               <button
@@ -377,7 +382,7 @@ function HistoryTransfer({
                     (value) => (value - 1 + frames.length) % frames.length,
                   )
                 }
-                aria-label="上一张二维码"
+                aria-label={t("transfer.previousQr")}
               >
                 <SkipBack size={18} />
               </button>
@@ -385,7 +390,9 @@ function HistoryTransfer({
                 className="icon-button"
                 type="button"
                 onClick={() => setPlaying((value) => !value)}
-                aria-label={playing ? '暂停二维码轮播' : '继续二维码轮播'}
+                aria-label={
+                  playing ? t("transfer.pauseQr") : t("transfer.resumeQr")
+                }
               >
                 {playing ? <Pause size={18} /> : <Play size={18} />}
               </button>
@@ -395,25 +402,29 @@ function HistoryTransfer({
                 onClick={() =>
                   setFrameIndex((value) => (value + 1) % frames.length)
                 }
-                aria-label="下一张二维码"
+                aria-label={t("transfer.nextQr")}
               >
                 <SkipForward size={18} />
               </button>
             </div>
-            <button className="text-button" type="button" onClick={returnToMenu}>
-              返回
+            <button
+              className="text-button"
+              type="button"
+              onClick={returnToMenu}
+            >
+              {t("transfer.back")}
             </button>
           </div>
         )}
-        {mode === 'import' && (
+        {mode === "import" && (
           <div className="transfer-import">
             <video ref={videoRef} muted playsInline />
             <div className="transfer-progress">
-              {progress || '扫描或选择同一批次的全部二维码'}
+              {progress || t("transfer.scanPrompt")}
             </div>
             <label className="primary-button">
               <Upload size={18} />
-              选择二维码图片
+              {t("transfer.chooseQr")}
               <input
                 type="file"
                 accept="image/*"
@@ -421,21 +432,25 @@ function HistoryTransfer({
                 onChange={(event) => void importImages(event)}
               />
             </label>
-            <button className="text-button" type="button" onClick={returnToMenu}>
-              重新开始
+            <button
+              className="text-button"
+              type="button"
+              onClick={returnToMenu}
+            >
+              {t("transfer.restart")}
             </button>
           </div>
         )}
-        {mode === 'text-export' && (
+        {mode === "text-export" && (
           <div className="transfer-text">
             <textarea
               value={transferText}
               readOnly
-              aria-label="导出的迁移文本"
+              aria-label={t("transfer.textExported")}
               onFocus={(event) => event.currentTarget.select()}
             />
             <div className="transfer-progress">
-              {progress || '复制这段加密文本到另一台设备'}
+              {progress || t("transfer.copyPrompt")}
             </div>
             <button
               className="primary-button"
@@ -443,20 +458,24 @@ function HistoryTransfer({
               onClick={() => void copyTransferText()}
             >
               <Clipboard size={18} />
-              复制迁移文本
+              {t("transfer.copyText")}
             </button>
-            <button className="text-button" type="button" onClick={returnToMenu}>
-              返回
+            <button
+              className="text-button"
+              type="button"
+              onClick={returnToMenu}
+            >
+              {t("transfer.back")}
             </button>
           </div>
         )}
-        {mode === 'text-import' && (
+        {mode === "text-import" && (
           <div className="transfer-text">
             <textarea
               value={transferText}
               onChange={(event) => setTransferText(event.target.value)}
-              placeholder="粘贴迁移文本"
-              aria-label="要导入的迁移文本"
+              placeholder={t("transfer.importPlaceholder")}
+              aria-label={t("transfer.importLabel")}
               autoFocus
             />
             {progress && <div className="transfer-progress">{progress}</div>}
@@ -471,10 +490,16 @@ function HistoryTransfer({
               ) : (
                 <Clipboard size={18} />
               )}
-              {isProcessingTransfer ? '正在解密历史…' : '导入并合并'}
+              {isProcessingTransfer
+                ? t("transfer.decrypting")
+                : t("transfer.importMerge")}
             </button>
-            <button className="text-button" type="button" onClick={returnToMenu}>
-              返回
+            <button
+              className="text-button"
+              type="button"
+              onClick={returnToMenu}
+            >
+              {t("transfer.back")}
             </button>
           </div>
         )}

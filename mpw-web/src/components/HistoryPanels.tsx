@@ -1,14 +1,9 @@
-import {
-  History,
-  KeyRound,
-  Search,
-  ShieldCheck,
-  Trash2,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { History, KeyRound, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import { normalizeSite, type SiteHistoryEntry } from '../lib/history';
-import HistoryItem from './HistoryItem';
+import { normalizeSite, type SiteHistoryEntry } from "../lib/history";
+import { useLanguage } from "../lib/useLanguage";
+import HistoryItem from "./HistoryItem";
 
 export interface HistoryProps {
   entries: SiteHistoryEntry[];
@@ -34,14 +29,15 @@ function HistoryList({
   selectedId,
   onLoad,
   onRemove,
-}: Pick<HistoryProps, 'entries' | 'selectedId' | 'onLoad' | 'onRemove'>) {
+}: Pick<HistoryProps, "entries" | "selectedId" | "onLoad" | "onRemove">) {
+  const { t } = useLanguage();
   return (
     <div className="history-list">
       {entries.length === 0 ? (
         <div className="empty">
           <KeyRound size={25} />
-          <strong>尚无网站历史</strong>
-          <span>成功生成后会出现在这里</span>
+          <strong>{t("history.emptyTitle")}</strong>
+          <span>{t("history.emptyCopy")}</span>
         </div>
       ) : (
         entries.map((entry) => (
@@ -60,20 +56,21 @@ function HistoryList({
 }
 
 export function DesktopHistory(props: HistoryProps) {
+  const { t } = useLanguage();
   const filtered = useFilteredHistory(props.entries, props.search);
 
   return (
     <aside className="history desktop-history" aria-labelledby="history-title">
       <div className="history-heading">
         <h2 id="history-title">
-          <History size={16} /> 最近使用
+          <History size={16} /> {t("history.recent")}
         </h2>
         {props.entries.length > 0 && (
           <button
             className="icon-button quiet"
             type="button"
             onClick={props.onClear}
-            aria-label="清除全部历史"
+            aria-label={t("history.clear")}
           >
             <Trash2 size={17} />
           </button>
@@ -84,14 +81,14 @@ export function DesktopHistory(props: HistoryProps) {
         <input
           value={props.search}
           onChange={(event) => props.onSearchChange(event.target.value)}
-          placeholder="搜索网站"
-          aria-label="搜索网站历史"
+          placeholder={t("history.search")}
+          aria-label={t("history.searchLabel")}
         />
       </label>
       {filtered.length === 0 && props.search ? (
         <div className="empty">
           <Search size={24} />
-          <strong>没有匹配的网站</strong>
+          <strong>{t("history.noMatch")}</strong>
         </div>
       ) : (
         <HistoryList
@@ -104,8 +101,8 @@ export function DesktopHistory(props: HistoryProps) {
       <div className="storage-note">
         <ShieldCheck size={17} />
         <p>
-          <strong>历史中不含敏感信息</strong>
-          <span>姓名、主密码和生成结果永不写入浏览器存储。</span>
+          <strong>{t("history.sensitiveTitle")}</strong>
+          <span>{t("history.sensitiveCopy")}</span>
         </p>
       </div>
     </aside>
@@ -113,6 +110,7 @@ export function DesktopHistory(props: HistoryProps) {
 }
 
 export function MobileHistory(props: HistoryProps) {
+  const { t } = useLanguage();
   const [managing, setManaging] = useState(false);
   const filtered = useFilteredHistory(props.entries, props.search);
 
@@ -120,7 +118,7 @@ export function MobileHistory(props: HistoryProps) {
     <section className="mobile-history" aria-labelledby="mobile-history-title">
       <div className="mobile-history-heading">
         <h2 id="mobile-history-title">
-          <History size={16} /> 最近使用
+          <History size={16} /> {t("history.recent")}
         </h2>
         {props.entries.length > 0 && (
           <button
@@ -128,7 +126,7 @@ export function MobileHistory(props: HistoryProps) {
             type="button"
             onClick={() => setManaging((value) => !value)}
           >
-            {managing ? '完成' : '管理'}
+            {managing ? t("history.done") : t("history.manage")}
           </button>
         )}
       </div>
@@ -137,16 +135,14 @@ export function MobileHistory(props: HistoryProps) {
         <input
           value={props.search}
           onChange={(event) => props.onSearchChange(event.target.value)}
-          placeholder="搜索网站"
-          aria-label="搜索移动端网站历史"
+          placeholder={t("history.search")}
+          aria-label={t("history.mobileSearchLabel")}
         />
       </label>
       {props.entries.length === 0 ? (
-        <p className="mobile-history-empty">
-          生成第一个密码后，网站会保存在这里。
-        </p>
+        <p className="mobile-history-empty">{t("history.mobileEmpty")}</p>
       ) : filtered.length === 0 ? (
-        <p className="mobile-history-empty">没有匹配的网站</p>
+        <p className="mobile-history-empty">{t("history.noMatch")}</p>
       ) : (
         <div className="history-shortcuts">
           {filtered.map((entry) => (
@@ -164,7 +160,7 @@ export function MobileHistory(props: HistoryProps) {
       )}
       {managing && props.entries.length > 0 && (
         <button className="clear-mobile" type="button" onClick={props.onClear}>
-          <Trash2 size={15} /> 清除全部历史
+          <Trash2 size={15} /> {t("history.clear")}
         </button>
       )}
     </section>

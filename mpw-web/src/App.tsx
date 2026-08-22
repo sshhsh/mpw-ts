@@ -1,26 +1,28 @@
-import { KeyRound, LockKeyhole, QrCode } from 'lucide-react';
-import { useState } from 'react';
+import { KeyRound, Languages, LockKeyhole, QrCode } from "lucide-react";
+import { useState } from "react";
 
-import './App.css';
-import BuildInfo from './components/BuildInfo';
-import GeneratedResult from './components/GeneratedResult';
-import GeneratorForm from './components/GeneratorForm';
+import "./App.css";
+import BuildInfo from "./components/BuildInfo";
+import GeneratedResult from "./components/GeneratedResult";
+import GeneratorForm from "./components/GeneratorForm";
 import {
   DesktopHistory,
   MobileHistory,
   type HistoryProps,
-} from './components/HistoryPanels';
-import HistoryTransfer from './components/HistoryTransfer';
-import ThemeSwitcher from './components/ThemeSwitcher';
-import UnlockView from './components/UnlockView';
-import UpdatePrompt from './components/UpdatePrompt';
-import { historyEntryId } from './lib/history';
-import { useHistory } from './lib/useHistory';
-import { usePasswordGeneration } from './lib/usePasswordGeneration';
-import { useTheme } from './lib/useTheme';
-import { useUnlock } from './lib/useUnlock';
+} from "./components/HistoryPanels";
+import HistoryTransfer from "./components/HistoryTransfer";
+import ThemeSwitcher from "./components/ThemeSwitcher";
+import UnlockView from "./components/UnlockView";
+import UpdatePrompt from "./components/UpdatePrompt";
+import { historyEntryId } from "./lib/history";
+import { useHistory } from "./lib/useHistory";
+import { useLanguage } from "./lib/useLanguage";
+import { usePasswordGeneration } from "./lib/usePasswordGeneration";
+import { useTheme } from "./lib/useTheme";
+import { useUnlock } from "./lib/useUnlock";
 
 function App() {
+  const { language, toggleLanguage, t } = useLanguage();
   const { preference, changePreference } = useTheme();
   const {
     entries: history,
@@ -29,7 +31,7 @@ function App() {
     merge: mergeHistoryEntries,
     clear: clearHistoryEntries,
   } = useHistory();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [transferOpen, setTransferOpen] = useState(false);
   const unlockState = useUnlock();
   const {
@@ -53,7 +55,7 @@ function App() {
   }
 
   function clearEntries() {
-    if (!window.confirm('清除全部网站历史？')) return;
+    if (!window.confirm(t("app.clearHistory.confirm"))) return;
     clearHistoryEntries();
   }
 
@@ -67,10 +69,22 @@ function App() {
     return (
       <div className="app-shell locked">
         <div className="locked-tools">
-          <ThemeSwitcher
-            preference={preference}
-            onChange={changePreference}
-          />
+          <ThemeSwitcher preference={preference} onChange={changePreference} />
+          <button
+            className="icon-button"
+            type="button"
+            onClick={toggleLanguage}
+            title={t("language.switch", {
+              current: t("language.name"),
+              next: language === "zh-CN" ? "English" : "中文",
+            })}
+            aria-label={t("language.switch", {
+              current: t("language.name"),
+              next: language === "zh-CN" ? "English" : "中文",
+            })}
+          >
+            <Languages size={18} />
+          </button>
         </div>
         <UnlockView
           fullName={fullName}
@@ -109,21 +123,18 @@ function App() {
           <span className="brand-mark">
             <KeyRound size={21} />
           </span>
-          <strong>离线密钥</strong>
-          <small>MPW v3</small>
+          <strong>{t("brand.name")}</strong>
+          <small>{t("brand.version")}</small>
         </div>
         <div className="session-info">
           <span>{fullName}</span>
-          <ThemeSwitcher
-            preference={preference}
-            onChange={changePreference}
-          />
+          <ThemeSwitcher preference={preference} onChange={changePreference} />
           <button
             className="icon-button"
             type="button"
             onClick={() => setTransferOpen(true)}
-            title="迁移网站历史"
-            aria-label="迁移网站历史"
+            title={t("app.migrate")}
+            aria-label={t("app.migrate")}
           >
             <QrCode size={19} />
           </button>
@@ -131,8 +142,8 @@ function App() {
             className="icon-button"
             type="button"
             onClick={lockSession}
-            title="锁定会话"
-            aria-label="锁定会话"
+            title={t("app.lock")}
+            aria-label={t("app.lock")}
           >
             <LockKeyhole size={19} />
           </button>
@@ -171,9 +182,9 @@ function App() {
         <DesktopHistory {...historyProps} />
       </main>
       <footer>
-        <span>算法版本 MPW v3</span>
+        <span>{t("app.algorithm")}</span>
         <div className="footer-meta">
-          <span>离线优先 · 无需账户 · 无网络请求</span>
+          <span>{t("app.footer")}</span>
           <BuildInfo />
         </div>
       </footer>

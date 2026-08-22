@@ -7,17 +7,18 @@ import {
   Plus,
   Settings2,
   X,
-} from 'lucide-react';
-import type { SubmitEvent } from 'react';
+} from "lucide-react";
+import type { SubmitEvent } from "react";
 
 import {
   MAX_COUNTER,
   MIN_COUNTER,
   TEMPLATES,
   type TemplateName,
-} from '@mpw/core';
+} from "@mpw/core";
 
-import { templateLabel, templateMetadata } from '../lib/templateMetadata';
+import { templateLabel } from "../lib/templateMetadata";
+import { useLanguage } from "../lib/useLanguage";
 
 interface GeneratorFormProps {
   advancedOpen: boolean;
@@ -54,13 +55,17 @@ function GeneratorForm({
   onSubmit,
   onTemplateChange,
 }: GeneratorFormProps) {
+  const { t } = useLanguage();
   return (
     <form onSubmit={onSubmit}>
-      <fieldset className="target-fields" aria-label="密码生成参数">
+      <fieldset
+        className="target-fields"
+        aria-label={t("generator.parameters")}
+      >
         <div className="field site-field">
           <div className="field-heading">
             <span className="section-label" id="site-label">
-              <Globe2 size={16} /> 网站或服务
+              <Globe2 size={16} /> {t("generator.site")}
             </span>
             <button
               className="field-clear"
@@ -69,10 +74,10 @@ function GeneratorForm({
               disabled={
                 !site &&
                 counter === MIN_COUNTER &&
-                template === 'long' &&
+                template === "long" &&
                 !hasResult
               }
-              aria-label="清空生成参数"
+              aria-label={t("generator.clear")}
             >
               <X size={14} />
             </button>
@@ -83,7 +88,7 @@ function GeneratorForm({
             value={site}
             onChange={(event) => onSiteChange(event.target.value)}
             autoComplete="off"
-            placeholder="例如 example.com"
+            placeholder={t("generator.sitePlaceholder")}
           />
         </div>
         <details
@@ -93,15 +98,15 @@ function GeneratorForm({
         >
           <summary>
             <Settings2 size={16} />
-            <span>高级选项</span>
+            <span>{t("generator.advanced")}</span>
             <small>
-              {templateMetadata[template].name} · 计数器 {counter}
+              {templateLabel(template, t)} · {t("generator.counter")} {counter}
             </small>
             <ChevronDown size={16} />
           </summary>
           <div className="advanced-fields">
             <label className="field">
-              <span>密码模板</span>
+              <span>{t("generator.passwordTemplate")}</span>
               <select
                 value={template}
                 onChange={(event) =>
@@ -110,18 +115,18 @@ function GeneratorForm({
               >
                 {(Object.keys(TEMPLATES) as TemplateName[]).map((name) => (
                   <option key={name} value={name}>
-                    {templateLabel(name)}
+                    {templateLabel(name, t)}
                   </option>
                 ))}
               </select>
             </label>
             <div className="field">
-              <span>计数器</span>
+              <span>{t("generator.counter")}</span>
               <div className="stepper">
                 <button
                   type="button"
                   onClick={() => onCounterChange(clampCounter(counter - 1))}
-                  aria-label="减少计数器"
+                  aria-label={t("generator.decreaseCounter")}
                 >
                   <Minus size={16} />
                 </button>
@@ -132,17 +137,15 @@ function GeneratorForm({
                   value={counter}
                   onChange={(event) =>
                     onCounterChange(
-                      clampCounter(
-                        Number(event.target.value) || MIN_COUNTER,
-                      ),
+                      clampCounter(Number(event.target.value) || MIN_COUNTER),
                     )
                   }
-                  aria-label="计数器"
+                  aria-label={t("generator.counter")}
                 />
                 <button
                   type="button"
                   onClick={() => onCounterChange(clampCounter(counter + 1))}
-                  aria-label="增加计数器"
+                  aria-label={t("generator.increaseCounter")}
                 >
                   <Plus size={16} />
                 </button>
@@ -167,9 +170,9 @@ function GeneratorForm({
           ) : (
             <KeyRound size={19} />
           )}
-          {isGenerating ? '正在生成…' : '生成密码'}
+          {isGenerating ? t("generator.generating") : t("generator.generate")}
         </button>
-        <span>首次解锁后，生成只需瞬间</span>
+        <span>{t("generator.hint")}</span>
       </div>
     </form>
   );

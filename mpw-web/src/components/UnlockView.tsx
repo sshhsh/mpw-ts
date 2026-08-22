@@ -6,10 +6,11 @@ import {
   LockKeyhole,
   ShieldCheck,
   UserRound,
-} from 'lucide-react';
-import type { SubmitEvent } from 'react';
+} from "lucide-react";
+import type { SubmitEvent } from "react";
 
-import BuildInfo from './BuildInfo';
+import BuildInfo from "./BuildInfo";
+import { useLanguage } from "../lib/useLanguage";
 
 interface UnlockViewProps {
   error: string;
@@ -24,19 +25,18 @@ interface UnlockViewProps {
 }
 
 function UnlockView(props: UnlockViewProps) {
+  const { t } = useLanguage();
   return (
     <main className="unlock-page">
       <section className="unlock-panel" aria-labelledby="unlock-title">
         <span className="unlock-mark">
           <KeyRound size={29} />
         </span>
-        <h1 id="unlock-title">解锁离线密钥</h1>
-        <p className="unlock-copy">
-          身份信息只在当前页面内存中使用，锁定或刷新后立即清除。
-        </p>
+        <h1 id="unlock-title">{t("unlock.title")}</h1>
+        <p className="unlock-copy">{t("unlock.copy")}</p>
         <form className="unlock-form" onSubmit={props.onSubmit}>
           <label className="field">
-            <span>完整姓名</span>
+            <span>{t("unlock.fullName")}</span>
             <div className="input-shell">
               <UserRound size={18} />
               <input
@@ -44,28 +44,36 @@ function UnlockView(props: UnlockViewProps) {
                 onChange={(event) => props.onFullNameChange(event.target.value)}
                 autoComplete="name"
                 autoFocus
-                placeholder="与其他设备保持完全一致"
+                placeholder={t("unlock.fullNamePlaceholder")}
               />
             </div>
           </label>
           <label className="field">
-            <span>主密码</span>
+            <span>{t("unlock.masterPassword")}</span>
             <div className="input-shell">
               <LockKeyhole size={18} />
               <input
-                type={props.showMaster ? 'text' : 'password'}
+                type={props.showMaster ? "text" : "password"}
                 value={props.masterPassword}
                 onChange={(event) =>
                   props.onMasterPasswordChange(event.target.value)
                 }
                 autoComplete="current-password"
-                placeholder="不会被保存"
+                placeholder={t("unlock.masterPasswordPlaceholder")}
               />
               <button
                 type="button"
                 onClick={props.onToggleMaster}
-                title={props.showMaster ? '隐藏主密码' : '显示主密码'}
-                aria-label={props.showMaster ? '隐藏主密码' : '显示主密码'}
+                title={
+                  props.showMaster
+                    ? t("unlock.hideMaster")
+                    : t("unlock.showMaster")
+                }
+                aria-label={
+                  props.showMaster
+                    ? t("unlock.hideMaster")
+                    : t("unlock.showMaster")
+                }
               >
                 {props.showMaster ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -86,12 +94,12 @@ function UnlockView(props: UnlockViewProps) {
             ) : (
               <LockKeyhole size={19} />
             )}
-            {props.isUnlocking ? '正在派生密钥…' : '解锁'}
+            {props.isUnlocking ? t("unlock.derive") : t("unlock.submit")}
           </button>
         </form>
         <div className="unlock-security">
           <ShieldCheck size={17} />
-          <span>无账户 · 无网络请求 · 不保存身份</span>
+          <span>{t("unlock.security")}</span>
         </div>
         <BuildInfo />
       </section>

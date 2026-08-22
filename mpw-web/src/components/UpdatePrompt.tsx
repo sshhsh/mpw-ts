@@ -1,7 +1,9 @@
-import { RefreshCw, X } from 'lucide-react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw, X } from "lucide-react";
+import { useRegisterSW } from "virtual:pwa-register/react";
+import { useLanguage } from "../lib/useLanguage";
 
 function UpdatePrompt() {
+  const { t } = useLanguage();
   const { needRefresh: refreshState, updateServiceWorker } = useRegisterSW();
   const [needRefresh, setNeedRefresh] = refreshState;
 
@@ -10,8 +12,8 @@ function UpdatePrompt() {
   return (
     <aside className="update-prompt" role="status" aria-live="polite">
       <div className="update-prompt-copy">
-        <strong>发现新版本</strong>
-        <span>更新会刷新页面，当前会话需要重新解锁。</span>
+        <strong>{t("update.title")}</strong>
+        <span>{t("update.copy")}</span>
       </div>
       <div className="update-prompt-actions">
         <button
@@ -19,7 +21,7 @@ function UpdatePrompt() {
           type="button"
           onClick={() => setNeedRefresh(false)}
         >
-          稍后
+          {t("update.later")}
         </button>
         <button
           className="update-prompt-confirm"
@@ -27,14 +29,14 @@ function UpdatePrompt() {
           onClick={() => void updateServiceWorker(true)}
         >
           <RefreshCw size={15} />
-          立即更新
+          {t("update.now")}
         </button>
         <button
           className="update-prompt-close"
           type="button"
           onClick={() => setNeedRefresh(false)}
-          title="关闭更新提示"
-          aria-label="关闭更新提示"
+          title={t("update.close")}
+          aria-label={t("update.close")}
         >
           <X size={16} />
         </button>

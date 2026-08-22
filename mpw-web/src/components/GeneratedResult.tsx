@@ -1,4 +1,6 @@
-import { Check, Clipboard, Eye, EyeOff } from 'lucide-react';
+import { Check, Clipboard, Eye, EyeOff } from "lucide-react";
+
+import { useLanguage } from "../lib/useLanguage";
 
 interface GeneratedResultProps {
   copied: boolean;
@@ -15,12 +17,13 @@ function GeneratedResult({
   onCopy,
   onToggleVisibility,
 }: GeneratedResultProps) {
+  const { t } = useLanguage();
   return (
-    <div className={`result ${result ? 'ready' : ''}`} aria-live="polite">
+    <div className={`result ${result ? "ready" : ""}`} aria-live="polite">
       <div>
-        <span>生成结果</span>
-        <strong className={result && !showResult ? 'masked' : ''}>
-          {result || '等待生成'}
+        <span>{t("result.title")}</span>
+        <strong className={result && !showResult ? "masked" : ""}>
+          {result || t("result.waiting")}
         </strong>
       </div>
       <div className="result-actions">
@@ -29,7 +32,7 @@ function GeneratedResult({
           type="button"
           disabled={!result}
           onClick={onToggleVisibility}
-          aria-label="显示或隐藏结果"
+          aria-label={t("result.toggle")}
         >
           {showResult ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
@@ -40,7 +43,7 @@ function GeneratedResult({
           onClick={onCopy}
         >
           {copied ? <Check size={18} /> : <Clipboard size={18} />}
-          {copied ? '已复制' : '复制'}
+          {copied ? t("result.copied") : t("result.copy")}
         </button>
       </div>
     </div>
