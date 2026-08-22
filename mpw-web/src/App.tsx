@@ -1,4 +1,4 @@
-import { KeyRound, Languages, LockKeyhole, QrCode } from "lucide-react";
+import { KeyRound, LockKeyhole, QrCode } from "lucide-react";
 import { useState } from "react";
 
 import "./App.css";
@@ -11,6 +11,7 @@ import {
   type HistoryProps,
 } from "./components/HistoryPanels";
 import HistoryTransfer from "./components/HistoryTransfer";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 import ThemeSwitcher from "./components/ThemeSwitcher";
 import UnlockView from "./components/UnlockView";
 import UpdatePrompt from "./components/UpdatePrompt";
@@ -22,7 +23,7 @@ import { useTheme } from "./lib/useTheme";
 import { useUnlock } from "./lib/useUnlock";
 
 function App() {
-  const { language, toggleLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const { preference, changePreference } = useTheme();
   const {
     entries: history,
@@ -70,21 +71,7 @@ function App() {
       <div className="app-shell locked">
         <div className="locked-tools">
           <ThemeSwitcher preference={preference} onChange={changePreference} />
-          <button
-            className="icon-button"
-            type="button"
-            onClick={toggleLanguage}
-            title={t("language.switch", {
-              current: t("language.name"),
-              next: language === "zh-CN" ? "English" : "中文",
-            })}
-            aria-label={t("language.switch", {
-              current: t("language.name"),
-              next: language === "zh-CN" ? "English" : "中文",
-            })}
-          >
-            <Languages size={18} />
-          </button>
+          <LanguageSwitcher />
         </div>
         <UnlockView
           fullName={fullName}
@@ -129,6 +116,9 @@ function App() {
         <div className="session-info">
           <span>{fullName}</span>
           <ThemeSwitcher preference={preference} onChange={changePreference} />
+          <span className="language-area">
+            <LanguageSwitcher />
+          </span>
           <button
             className="icon-button"
             type="button"

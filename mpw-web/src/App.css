@@ -12,6 +12,9 @@
   top: 20px;
   right: 20px;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .unlock-page {
   width: min(100%, 470px);
@@ -106,6 +109,13 @@
 }
 .session-info {
   gap: 14px;
+}
+.language-area {
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+}
+.language-switcher {
+  width: 40px;
 }
 button,
 input,
@@ -1067,6 +1077,9 @@ footer {
   }
   .session-info {
     gap: 8px;
+  }
+  .language-area {
+    padding-left: 8px;
   }
   .session-info > span {
     max-width: 120px;
