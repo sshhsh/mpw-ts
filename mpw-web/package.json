@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "icons": "node scripts/generate-icons.mjs",
+    "predev": "npm run icons",
     "dev": "vite",
+    "prebuild": "npm run icons",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
