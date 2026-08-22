@@ -50,19 +50,44 @@ describe('App session workflow', () => {
   });
 
   it('switches theme mode before and after unlocking', async () => {
-    expect(screen.getByRole('button', { name: '深色模式' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
-    fireEvent.click(screen.getByRole('button', { name: '深色模式' }));
+    let themeButton = screen.getByRole('button', {
+      name: '当前为跟随系统，切换为浅色模式',
+    });
+    fireEvent.click(themeButton);
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
+
+    themeButton = screen.getByRole('button', {
+      name: '当前为浅色模式，切换为深色模式',
+    });
+    fireEvent.click(themeButton);
     expect(document.documentElement.dataset.theme).toBe('dark');
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
 
-    await unlock();
-    expect(screen.getByRole('button', { name: '深色模式' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    themeButton = screen.getByRole('button', {
+      name: '当前为深色模式，切换为跟随系统',
+    });
+    fireEvent.click(themeButton);
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('system');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '当前为跟随系统，切换为浅色模式',
+      }),
     );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '当前为浅色模式，切换为深色模式',
+      }),
+    );
+    await unlock();
+    expect(
+      screen.getByRole('button', {
+        name: '当前为深色模式，切换为跟随系统',
+      }),
+    ).toBeInTheDocument();
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
   });
 
   async function unlock() {

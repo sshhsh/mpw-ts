@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Moon, Sun, SunMoon } from 'lucide-react';
 
 import type { ThemePreference } from '../lib/useTheme';
 
@@ -10,26 +10,24 @@ interface ThemeSwitcherProps {
 const options = [
   { value: 'light', label: '浅色模式', icon: Sun },
   { value: 'dark', label: '深色模式', icon: Moon },
-  { value: 'system', label: '跟随系统', icon: Monitor },
+  { value: 'system', label: '跟随系统', icon: SunMoon },
 ] as const;
 
 function ThemeSwitcher({ preference, onChange }: ThemeSwitcherProps) {
+  const current = options.find((option) => option.value === preference)!;
+  const next = options[(options.indexOf(current) + 1) % options.length];
+  const Icon = current.icon;
+
   return (
-    <div className="theme-switcher" role="group" aria-label="主题模式">
-      {options.map(({ value, label, icon: Icon }) => (
-        <button
-          className="theme-option"
-          type="button"
-          key={value}
-          onClick={() => onChange(value)}
-          aria-label={label}
-          aria-pressed={preference === value}
-          title={label}
-        >
-          <Icon size={16} />
-        </button>
-      ))}
-    </div>
+    <button
+      className="icon-button theme-switcher"
+      type="button"
+      onClick={() => onChange(next.value)}
+      aria-label={`当前为${current.label}，切换为${next.label}`}
+      title={`当前为${current.label}，切换为${next.label}`}
+    >
+      <Icon size={18} />
+    </button>
   );
 }
 
