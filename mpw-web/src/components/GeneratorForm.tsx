@@ -8,7 +8,7 @@ import {
   Settings2,
   X,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
 
 import {
   MAX_COUNTER,
@@ -31,7 +31,7 @@ interface GeneratorFormProps {
   onCounterChange: (counter: number) => void;
   onReset: () => void;
   onSiteChange: (site: string) => void;
-  onSubmit: (event: FormEvent) => void;
+  onSubmit: (event: SubmitEvent) => void;
   onTemplateChange: (template: TemplateName) => void;
 }
 

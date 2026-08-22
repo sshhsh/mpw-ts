@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { useMpwSession } from './useMpwSession';
 
@@ -10,7 +10,7 @@ export function useUnlock() {
   const [unlockError, setUnlockError] = useState('');
   const { mpw, unlock: unlockMpw, lock: lockMpw } = useMpwSession();
 
-  async function unlock(event: FormEvent): Promise<void> {
+  async function unlock(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     const name = fullName.trim();
     if (!name || !masterPassword) {

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import type { SiteHistoryEntry } from './history';
 import type { MpwInstance } from './mpwTypes';
@@ -28,7 +28,7 @@ export function usePasswordGeneration({
     setError('');
   }
 
-  async function generate(event: FormEvent): Promise<void> {
+  async function generate(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     const target = generator.site.trim();
     if (!mpw) {

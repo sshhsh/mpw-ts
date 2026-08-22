@@ -1,4 +1,4 @@
-import { Github } from 'lucide-react';
+import { SiGithub } from '@icons-pack/react-simple-icons';
 
 function BuildInfo() {
   return (
@@ -10,7 +10,7 @@ function BuildInfo() {
         rel="noreferrer"
         aria-label="在 GitHub 查看源代码"
       >
-        <Github size={14} />
+        <SiGithub size={14} />
         <span>github.com/sshhsh/mpw-ts</span>
       </a>
     </div>

@@ -23,6 +23,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.flat.recommended.rules,
+      '@typescript-eslint/no-deprecated': 'warn',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
 
 import BuildInfo from './BuildInfo';
 
@@ -19,7 +19,7 @@ interface UnlockViewProps {
   showMaster: boolean;
   onFullNameChange: (value: string) => void;
   onMasterPasswordChange: (value: string) => void;
-  onSubmit: (event: FormEvent) => void;
+  onSubmit: (event: SubmitEvent) => void;
   onToggleMaster: () => void;
 }
 
