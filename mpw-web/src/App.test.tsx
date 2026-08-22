@@ -31,6 +31,7 @@ vi.mock('virtual:pwa-register/react', () => ({
 import App from './App';
 import { STORAGE_KEY } from './lib/history';
 import { encryptHistory } from './lib/historyTransfer';
+import { THEME_STORAGE_KEY } from './lib/useTheme';
 
 describe('App session workflow', () => {
   beforeEach(() => {
@@ -46,6 +47,22 @@ describe('App session workflow', () => {
     deriveHistoryTransferKey.mockReset().mockResolvedValue(new Uint8Array(32));
     generateAuthentication.mockReset().mockResolvedValue('ZedaFaxcZaso9*');
     invalidate.mockReset();
+  });
+
+  it('switches theme mode before and after unlocking', async () => {
+    expect(screen.getByRole('button', { name: '深色模式' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    fireEvent.click(screen.getByRole('button', { name: '深色模式' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
+
+    await unlock();
+    expect(screen.getByRole('button', { name: '深色模式' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   async function unlock() {

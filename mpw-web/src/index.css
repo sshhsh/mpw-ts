@@ -9,6 +9,20 @@
   --green: #236953;
   --line: #dedacf;
   --line-strong: #cbc6b9;
+  --error: #8e2e26;
+  --error-border: #b44235;
+  --error-surface: #f7e5df;
+  --result-surface: #f8faf5;
+  --selected-surface: rgba(35, 105, 83, 0.07);
+  --panel-surface: rgba(255, 255, 255, 0.64);
+  --grid-line: rgba(21, 53, 45, 0.022);
+  --shadow-color: rgba(21, 53, 45, 0.18);
+  --focus-ring: rgba(35, 105, 83, 0.22);
+  --success-border: #9eb8ae;
+  --monogram-border: #abc0b7;
+  --monogram-surface: #edf5ef;
+  --backdrop: rgba(21, 53, 45, 0.46);
+  --video-surface: #102a24;
   --sans: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
   --mono: 'IBM Plex Mono', Consolas, monospace;
   color: var(--ink);
@@ -17,6 +31,31 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+:root[data-theme='dark'] {
+  --paper: #202a26;
+  --canvas: #121816;
+  --ink: #edf3ee;
+  --ink-soft: #c6d4cb;
+  --muted: #91a39a;
+  --forest: #a9d5c0;
+  --green: #78c6a7;
+  --line: #33443c;
+  --line-strong: #4b6055;
+  --error: #ffb4a8;
+  --error-border: #e6786c;
+  --error-surface: #482824;
+  --result-surface: #24382f;
+  --selected-surface: rgba(120, 198, 167, 0.14);
+  --panel-surface: rgba(32, 42, 38, 0.82);
+  --grid-line: rgba(169, 213, 192, 0.035);
+  --shadow-color: rgba(0, 0, 0, 0.42);
+  --focus-ring: rgba(120, 198, 167, 0.34);
+  --success-border: #5f9d84;
+  --monogram-border: #527565;
+  --monogram-surface: #203c31;
+  --backdrop: rgba(0, 0, 0, 0.62);
+  --video-surface: #091612;
 }
 * {
   box-sizing: border-box;
@@ -31,8 +70,8 @@ body {
   margin: 0;
   background-color: var(--canvas);
   background-image:
-    linear-gradient(rgba(21, 53, 45, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(21, 53, 45, 0.022) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 button,
@@ -41,7 +80,7 @@ select {
   letter-spacing: 0;
 }
 input::placeholder {
-  color: #a39f96;
+  color: var(--muted);
 }
 button:focus-visible,
 input:focus-visible,

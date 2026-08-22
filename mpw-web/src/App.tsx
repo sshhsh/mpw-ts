@@ -11,14 +11,17 @@ import {
   type HistoryProps,
 } from './components/HistoryPanels';
 import HistoryTransfer from './components/HistoryTransfer';
+import ThemeSwitcher from './components/ThemeSwitcher';
 import UnlockView from './components/UnlockView';
 import UpdatePrompt from './components/UpdatePrompt';
 import { historyEntryId } from './lib/history';
 import { useHistory } from './lib/useHistory';
 import { usePasswordGeneration } from './lib/usePasswordGeneration';
+import { useTheme } from './lib/useTheme';
 import { useUnlock } from './lib/useUnlock';
 
 function App() {
+  const { preference, changePreference } = useTheme();
   const {
     entries: history,
     upsert: upsertHistoryEntry,
@@ -63,6 +66,12 @@ function App() {
   if (!mpw) {
     return (
       <div className="app-shell locked">
+        <div className="locked-tools">
+          <ThemeSwitcher
+            preference={preference}
+            onChange={changePreference}
+          />
+        </div>
         <UnlockView
           fullName={fullName}
           masterPassword={masterPassword}
@@ -105,6 +114,10 @@ function App() {
         </div>
         <div className="session-info">
           <span>{fullName}</span>
+          <ThemeSwitcher
+            preference={preference}
+            onChange={changePreference}
+          />
           <button
             className="icon-button"
             type="button"

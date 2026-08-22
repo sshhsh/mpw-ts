@@ -7,14 +7,20 @@
   place-items: center;
   padding: 24px;
 }
+.locked-tools {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+}
 .unlock-page {
   width: min(100%, 470px);
 }
 .unlock-panel {
   padding: clamp(28px, 6vw, 52px);
   border: 1px solid var(--line-strong);
-  background: rgba(251, 250, 245, 0.88);
-  box-shadow: 0 18px 50px rgba(21, 53, 45, 0.08);
+  background: var(--panel-surface);
+  box-shadow: 0 18px 50px var(--shadow-color);
   animation: rise 0.4s ease-out both;
 }
 .unlock-mark {
@@ -67,7 +73,7 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  background: rgba(244, 241, 232, 0.88);
+  background: color-mix(in srgb, var(--canvas) 88%, transparent);
   backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
@@ -100,6 +106,29 @@
 }
 .session-info {
   gap: 14px;
+}
+.theme-switcher {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--paper);
+}
+.theme-option {
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  color: var(--muted);
+  background: transparent;
+}
+.theme-option:hover,
+.theme-option[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--selected-surface);
 }
 button,
 input,
@@ -166,7 +195,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: rgba(237, 233, 220, 0.46);
+  background: color-mix(in srgb, var(--line) 18%, transparent);
   position: sticky;
   top: 72px;
 }
@@ -257,7 +286,7 @@ fieldset {
 }
 .field-clear:hover:not(:disabled) {
   color: var(--green);
-  background: rgba(35, 105, 83, 0.08);
+  background: var(--selected-surface);
 }
 .input-shell,
 .field > input,
@@ -281,7 +310,7 @@ fieldset {
 .field > select:focus,
 .stepper:focus-within,
 .search-box:focus-within {
-  outline: 2px solid rgba(35, 105, 83, 0.22);
+  outline: 2px solid var(--focus-ring);
   border-color: var(--green);
 }
 .input-shell > svg {
@@ -388,9 +417,9 @@ fieldset {
 .error {
   margin: -8px 0 20px;
   padding: 11px 13px;
-  border-left: 3px solid #b44235;
-  color: #8e2e26;
-  background: #f7e5df;
+  border-left: 3px solid var(--error-border);
+  color: var(--error);
+  background: var(--error-surface);
   font-size: 13px;
 }
 .generate-row {
@@ -413,7 +442,7 @@ fieldset {
   color: white;
   background: var(--forest);
   font-weight: 700;
-  box-shadow: 0 7px 20px rgba(21, 53, 45, 0.15);
+  box-shadow: 0 7px 20px var(--shadow-color);
 }
 .spin {
   animation: spin 1s linear infinite;
@@ -426,12 +455,12 @@ fieldset {
   margin-top: 32px;
   padding: 16px 16px 16px 19px;
   border: 1px dashed var(--line-strong);
-  background: rgba(255, 255, 255, 0.36);
+  background: var(--panel-surface);
 }
 .result.ready {
   border-style: solid;
-  border-color: #9eb8ae;
-  background: #f8faf5;
+  border-color: var(--success-border);
+  background: var(--result-surface);
 }
 .result > div:first-child {
   min-width: 0;
@@ -490,7 +519,7 @@ fieldset {
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.64);
+  background: var(--panel-surface);
 }
 .search-box input {
   min-width: 0;
@@ -517,7 +546,7 @@ fieldset {
   border-bottom: 1px solid var(--line);
 }
 .history-item.selected {
-  background: rgba(35, 105, 83, 0.07);
+  background: var(--selected-surface);
 }
 .history-load {
   min-width: 0;
@@ -536,10 +565,10 @@ fieldset {
   height: 35px;
   display: grid;
   place-items: center;
-  border: 1px solid #abc0b7;
+  border: 1px solid var(--monogram-border);
   border-radius: 5px;
   color: var(--forest);
-  background: #edf5ef;
+  background: var(--monogram-surface);
   font: 700 14px var(--mono);
 }
 .history-load > span:last-child,
@@ -646,7 +675,7 @@ footer {
   border: 1px solid var(--line-strong);
   border-left: 4px solid var(--green);
   background: var(--paper);
-  box-shadow: 0 14px 36px rgba(21, 53, 45, 0.18);
+  box-shadow: 0 14px 36px var(--shadow-color);
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -706,7 +735,7 @@ footer {
 .update-prompt-dismiss:hover,
 .update-prompt-close:hover {
   color: var(--ink);
-  background: rgba(35, 105, 83, 0.08);
+  background: var(--selected-surface);
 }
 .update-prompt-confirm:hover {
   background: var(--forest);
@@ -738,7 +767,7 @@ footer {
   padding: 20px;
   display: grid;
   place-items: center;
-  background: rgba(21, 53, 45, 0.46);
+  background: var(--backdrop);
 }
 .transfer-dialog {
   width: min(100%, 420px);
@@ -748,13 +777,13 @@ footer {
   padding: 24px;
   border: 1px solid var(--line-strong);
   background: var(--paper);
-  box-shadow: 0 22px 70px rgba(21, 53, 45, 0.22);
+  box-shadow: 0 22px 70px var(--shadow-color);
   animation: rise 0.25s ease-out both;
 }
 .transfer-backdrop.scanning .transfer-dialog {
   animation: none;
   transform: none;
-  box-shadow: 0 10px 32px rgba(21, 53, 45, 0.18);
+  box-shadow: 0 10px 32px var(--shadow-color);
 }
 .transfer-dialog.exporting-qr {
   width: min(100%, 500px);
@@ -814,12 +843,12 @@ footer {
   border: 1px solid var(--line-strong);
   border-radius: 5px;
   color: var(--green);
-  background: rgba(255, 255, 255, 0.52);
+  background: var(--panel-surface);
   text-align: left;
 }
 .transfer-option:hover {
   border-color: var(--green);
-  background: #f8faf5;
+  background: var(--result-surface);
 }
 .transfer-option span {
   display: grid;
@@ -872,7 +901,7 @@ footer {
   width: 100%;
   max-height: 360px;
   object-fit: cover;
-  background: #102a24;
+  background: var(--video-surface);
   transform: translateZ(0);
   contain: paint;
 }
@@ -892,12 +921,13 @@ footer {
   border-radius: 5px;
   outline: 0;
   color: var(--ink);
-  background: white;
+  color-scheme: light dark;
+  background: var(--paper);
   font: 11px/1.5 var(--mono);
   overflow-wrap: anywhere;
 }
 .transfer-text textarea:focus {
-  outline: 2px solid rgba(35, 105, 83, 0.22);
+  outline: 2px solid var(--focus-ring);
   border-color: var(--green);
 }
 .transfer-text .primary-button {
@@ -973,7 +1003,7 @@ footer {
     min-width: 0;
     height: 46px;
     border: 1px solid var(--line);
-    background: rgba(251, 250, 245, 0.7);
+    background: var(--panel-surface);
   }
   .shortcut-wrap.selected {
     border-color: var(--green);
